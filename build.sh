@@ -22,6 +22,6 @@ KEY="ciao mondo"
 echo "utils/encript.py encstring src/libbson/ src/libbson/preprocessed \"$KEY\" utils/tfc"
 python utils/encript.py encstring src/libbson/ src/libbson/preprocessed "$KEY" utils/tfc
 cd jni
-ndk-build
+ndk-build V=1
 cd -
 
