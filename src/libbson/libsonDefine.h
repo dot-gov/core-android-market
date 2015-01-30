@@ -27,6 +27,12 @@
 
 #define TYPE_MAX (TYPE_HTML+1)
 
+/*
+ * these fields are used to build the hash
+ * containing all the bson decoded informations.
+ * In some cases are also used to extract bson fields during
+ * bson object decoding
+ */
 #define HASH_FIELDS 7
 #define HASH_FIELD_TYPE "type"
 #define HASH_FIELD_CHECKSUM "checksum"
