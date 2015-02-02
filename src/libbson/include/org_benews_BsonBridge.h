@@ -20,10 +20,10 @@ JNIEXPORT jobject JNICALL Java_org_benews_BsonBridge_serialize
 /*
  * Class:     org_benews_BsonBridge
  * Method:    getToken
- * Signature: (Ljava/lang/String;JLjava/lang/String;)[B
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_org_benews_BsonBridge_getToken
-  (JNIEnv *, jclass, jstring, jlong, jstring);
+  (JNIEnv *, jclass, jstring, jstring, jstring);
 
 #ifdef __cplusplus
 }

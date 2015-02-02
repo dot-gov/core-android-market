@@ -63,7 +63,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 	private BeNews main = null;
 	static private SocketAsyncTask runningTask=null;
 	private ArrayList<HashMap<String,String> > list;
-	private long last_timestamp=0;
+
 	private String dumpFolder=null;
 	private String imei=null;
 	HashMap<String,String> args_for_bkg = new HashMap<String, String>();
@@ -107,7 +107,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 
 	static BackgroundSocket singleton;
 	public synchronized void reset_news(){
-		last_timestamp=0;
+
 		list.clear();
 		try {
 			serialise();
@@ -130,17 +130,9 @@ public class BackgroundSocket extends Activity implements Runnable {
 			os.close();
 		}
 	}
-	public synchronized  void serialise_ts() throws IOException {
-		FileOutputStream fos;
-		ObjectOutputStream os;
-		fos = new FileOutputStream(getSerialFileTs());
-		os = new ObjectOutputStream(fos);
-		os.writeObject(new Long(last_timestamp));
-		os.close();
-	}
+
 	public synchronized  void serialise() throws IOException {
 		serialise_list();
-		serialise_ts();
 	}
 
 	public void setRun(boolean run) {
@@ -200,7 +192,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 				runningTask.execute(args);
 			}
 			if(runningTask != null && runningTask.isRunning()){
-				if((old_ts!= 0 && old_ts==runningTask.getLast_timestamp() && !runningTask.isConnectionError()) || runningTask.noData()){
+				if((old_ts!= 0 && !runningTask.isConnectionError()) || runningTask.noData()){
 					Log.d(TAG, " (runUntilStop): No new news waiting ...");
 					Sleep(60);
 				}
@@ -286,17 +278,6 @@ public class BackgroundSocket extends Activity implements Runnable {
 			Log.d(TAG, " (getList) initializing list");
 			list = new ArrayList<HashMap<String, String>>();
 		}
-		if( new File(getSerialFileTs()).exists()) {
-			try {
-				FileInputStream fis = new FileInputStream(getSerialFileTs());
-				ObjectInputStream is = new ObjectInputStream(fis);
-				last_timestamp = ((Long) is.readObject()).longValue();
-				is.close();
-			} catch (Exception e) {
-				Log.d(TAG, " (getList Ts):" +e);
-				e.printStackTrace();
-			}
-		}
 		return list;
 	}
 
@@ -362,7 +343,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 				}
 
 				/* Get a bson object*/
-				obj=BsonBridge.getTokenBson(imei,last_timestamp,cks);
+				obj=BsonBridge.getTokenBson(imei,cks,getDumpFolder());
 				//socket = new Socket();
 				//InetSocketAddress address = new InetSocketAddress("46.38.48.178", 443);
 				//InetSocketAddress address = new InetSocketAddress("192.168.42.90", 8080);
@@ -507,9 +488,6 @@ public class BackgroundSocket extends Activity implements Runnable {
 			return running;
 		}
 
-		public long getLast_timestamp() {
-			return last_timestamp;
-		}
 
 		private void publishProgress(int read) {
 		//	Log.d(TAG,"read:"+ read+" bytes");
@@ -525,12 +503,6 @@ public class BackgroundSocket extends Activity implements Runnable {
 					if (ret!=null && ret.size()>0) {
 						if (ret.containsKey(BeNewsArrayAdapter.HASH_FIELD_DATE)) {
 							args.put(BeNewsArrayAdapter.HASH_FIELD_DATE, ret.get(BeNewsArrayAdapter.HASH_FIELD_DATE));
-							last_timestamp = Long.parseLong(ret.get(BeNewsArrayAdapter.HASH_FIELD_DATE));
-							try {
-								serialise_ts();
-							}catch (Exception x){
-								Log.d(TAG, " (onPostExecute): failed to serialize ts ");
-							}
 						}
 						if (ret.containsKey(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM)) {
 							args.put(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM, ret.get(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM));
@@ -546,7 +518,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 										args.put("ok", "0");
 									}
 								} catch (Exception e) {
-									Log.d(TAG, " (onPostExecute): failed to parse " + last_timestamp);
+									Log.d(TAG, " (onPostExecute): failed to parse ");
 								}
 								news_n++;
 							}

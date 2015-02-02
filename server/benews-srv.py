@@ -232,12 +232,7 @@ def save_bad_request(ip, port, data, dir):
     statinfo = os.stat(filename)
     initial_size=statinfo.st_size
     if data is None:
-        file.write(""
-                   ""
-                   ""
-                   ""
-                   ""
-                   "no data recived")
+        file.write("no data recived")
     else:
         file.write(data)
     file.flush()
