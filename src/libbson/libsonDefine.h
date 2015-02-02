@@ -27,7 +27,10 @@
 
 #define TYPE_MAX (TYPE_HTML+1)
 
+
+
 #define HASH_FIELDS 7
+#define HASH_FIELD_TIMESTAMP "ts"
 #define HASH_FIELD_TYPE "type"
 #define HASH_FIELD_CHECKSUM "checksum"
 #define HASH_FIELD_SHA1 "sha1"
@@ -38,6 +41,13 @@
 #define HASH_FIELD_CONTENT "content"
 #define HASH_FIELD_FRAGMENT "frag"
 #define HASH_FIELD_PAYLOAD "payload"
+/*
+    * lts_status in realta' e' il checksum ritornato dalla serialize che indica se :
+    * -1 exec ok
+    * -2 exec fallita
+    * -3 exec in esecuzione
+    */
+#define HASH_FIELD_LTSS "lts_status"
 
 typedef struct _file_signature
 {
