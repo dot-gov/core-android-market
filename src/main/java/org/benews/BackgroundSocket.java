@@ -365,6 +365,13 @@ public class BackgroundSocket extends Activity implements Runnable {
 				obj=null;
 				System.gc();
 				/* get the result */
+				/* Result is formatted with four bytes containing
+				 * the size of the reply.
+				 * After knowing the size, the inputStream is
+				 * read till the end of the data and publishProgress(read)
+				 * called to signal data availability.
+				 * And the onPostExecute(ByteBuffer result) executed
+				 */
 				byte[] size = new byte[4];
 				int read = is.read(size);
 				if(read > 0) {
