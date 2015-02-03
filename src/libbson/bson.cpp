@@ -1062,13 +1062,13 @@ AEnv->ReleaseStringUTFChars(AStr, s);
  0x0
  0x63 0x69 0x61 0x6f 0x20 0x6d 0x6f 0x6e 0x64 0x6f 0x0
  */
-JNIEXPORT jobject JNICALL Java_org_benews_BsonBridge_serialize(JNIEnv *env, jclass obj, jstring basedir, jobject bson_s)
+JNIEXPORT jobject JNICALL Java_org_benews_BsonBridge_deserialize(JNIEnv *env, jclass obj, jstring basedir, jobject bson_s)
 {
 
 jobject resS;
 CheckMutex();
 if (threadStarted) {
-   logd("serialize thread running..");
+   logd("deserialize thread running..");
    if (pthread_mutex_trylock(&mux_running) == 0) {
       logd("job finished, join it");
       void *status;

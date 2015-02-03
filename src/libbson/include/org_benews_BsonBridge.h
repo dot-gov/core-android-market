@@ -11,10 +11,10 @@ extern "C" {
 #define org_benews_BsonBridge_BSON_TYPE_TEXT 0L
 /*
  * Class:     org_benews_BsonBridge
- * Method:    serialize
+ * Method:    deserialize
  * Signature: (Ljava/lang/String;Ljava/nio/ByteBuffer;)Ljava/util/HashMap;
  */
-JNIEXPORT jobject JNICALL Java_org_benews_BsonBridge_serialize
+JNIEXPORT jobject JNICALL Java_org_benews_BsonBridge_deserialize
   (JNIEnv *, jclass, jstring, jobject);
 
 /*

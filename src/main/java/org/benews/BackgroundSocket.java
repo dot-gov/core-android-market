@@ -1,18 +1,11 @@
 package org.benews;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.ArrayAdapter;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -34,7 +26,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.Semaphore;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
@@ -43,7 +34,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 /**
@@ -505,7 +495,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 
 			synchronized (this) {
 				if(result != null && result.capacity() > 0) {
-					HashMap<String,String> ret=BsonBridge.serializeBson(getDumpFolder(), result);
+					HashMap<String,String> ret=BsonBridge.deserializeBson(getDumpFolder(), result);
 
 					if (ret!=null && ret.size()>0) {
 						if (ret.containsKey(BeNewsArrayAdapter.HASH_FIELD_DATE)) {
