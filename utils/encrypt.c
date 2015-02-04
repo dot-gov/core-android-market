@@ -124,12 +124,62 @@ int crypt(char *dst,char *src, char *key,int skip)
   }
   return 0;
 }
+char const *special[]={"7F454C46","504B0304",NULL};
+int is_special(char *src,char *key)
+{
+  rc4_ks_t keyrc4;
+  int out_len = 1;
+  char res=0;
+  std::ifstream iin (src, std::ifstream::binary);
+  //printf("crypt key=%s [%d]",key,(int)strlen((char *)key));
+
+  if (iin) {
+    char * dec = new char [8];
+    char * buffer = new char [CHUNK_SIZE];
+    int length=0;
+    memset(buffer,0,sizeof(buffer));
+    memset(dec,0,sizeof(dec));
+
+    rc4_setks((uint8_t*)key, strlen((char *)key), &keyrc4);
+    rc4_crypt((uint8_t*)buffer, CHUNK_SIZE, &keyrc4);
+    memset(buffer,0,sizeof(buffer));
+    iin.read (buffer,CHUNK_SIZE);
+    length = (int)iin.gcount() ;
+    rc4_crypt((uint8_t*)buffer, length, &keyrc4);
+    std::string enc = ToHex(std::string(buffer,length), true);
+    //printf("<%s>",enc.c_str());
+    memcpy(dec,enc.c_str(),(size_t) sizeof(dec));
+   
+    length = 0;
+    while(special[length]){
+      //printf("Testing %i %s-->%s",length,dec,special[length]);
+      if(memcmp(dec,special[length],sizeof(enc))==0){
+        printf("Got a special!\n");
+        res=1;
+        break;
+      }
+      length++;
+    }
+    iin.close();
+    delete[] buffer;
+    delete[] dec;
+  }
+  return res;
+}
+
 int main(int argc, char **argv){
   int print_help=0;
   if(argc<2){
     print_help=1;
   }else{
-    if(strncmp(argv[1],"test",4)==0){
+    if(strncmp(argv[1],"check",5)==0){
+      if(argc==4){
+        is_special(argv[2],argv[3]);
+      }else{
+        print_help=1;
+      }
+
+    }else if(strncmp(argv[1],"test",4)==0){
       if(argc==4){
         test(argv[2],argv[3]);
       }else{
