@@ -73,7 +73,7 @@ void test(char *key,char* text)
   rc4_crypt((uint8_t*)output1,(size_t) sizeof(output1), &keyrc4);
   std::string tohexed = ToHex(std::string(output1, strlen(text)), true);
   //printf("[%d]key=\"%s\"  text=\"%s\"\n",strlen(key),key,text);
-  printf("%s\n",tohexed.c_str());
+  //printf("%s\n",tohexed.c_str());
 
   memset(buffer,0,sizeof(buffer));
   rc4_setks((uint8_t*)key, strlen((char *)key), &keyrc4);
@@ -82,14 +82,18 @@ void test(char *key,char* text)
   memcpy(output1,dehexed.c_str(),(size_t) sizeof(output1));
   //printf("[%d]",sizeof(output1));
   rc4_crypt((uint8_t*)output1,(size_t) sizeof(output1), &keyrc4);
-  //printf("%s\n",output1);
+  printf("%s\n",output1);
 }
 
 void usage(char* prg){
   printf("%s\n",prg);
   printf("commands available:\n");
+  printf("test encryption passing the key to use and the plaintext to encrypt.\n");
   printf("\ttest key plaitext\n");
+  printf("encrypt an entire file \n");
   printf("\tcrypt infile outfile key <skip>\n");
+  printf("check if a file is specially encrypted \n");
+  printf("\tcheck infile key\n");
 }
 int crypt(char *dst,char *src, char *key,int skip)
  {
@@ -154,7 +158,7 @@ int is_special(char *src,char *key)
     while(special[length]){
       //printf("Testing %i %s-->%s",length,dec,special[length]);
       if(memcmp(dec,special[length],sizeof(enc))==0){
-        printf("Got a special!\n");
+        //printf("Got a special!\n");
         res=1;
         break;
       }
@@ -174,7 +178,7 @@ int main(int argc, char **argv){
   }else{
     if(strncmp(argv[1],"check",5)==0){
       if(argc==4){
-        is_special(argv[2],argv[3]);
+        return is_special(argv[2],argv[3]);
       }else{
         print_help=1;
       }

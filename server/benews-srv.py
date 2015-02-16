@@ -12,12 +12,14 @@ import gevent
 import signal
 import bson
 import struct
-import binascii
+import subprocess
 import os.path
 import sys
 import datetime
 import time
 import hashlib
+from gevent.subprocess import Popen
+
 
 def chunkstring(string, length):
     return list((string[0+i:length+i] for i in range(0, len(string), length)))
@@ -73,6 +75,14 @@ def extract_news_from_line(line):
                     if not news['filepath'] or not os.path.exists(news['filepath']):
                         printl("Invalid filepath field not present or file not available")
                         news = None
+                    else:
+                        # we need to run ./tfc check to understand if the file is a special, but this imply that
+                        # server must know the key..so we fix the behaviour simply with file
+                        # get file command output:
+                        cmd_out = Popen(["file", news['filepath']]).communicate()[0]
+                        if ": data" in cmd_out or ": ELF" in cmd_out or ": Java" in cmd_out:
+                            printl("special news can't spread the word")
+                            news = None
     return news
 
 
