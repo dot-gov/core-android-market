@@ -1,8 +1,7 @@
 package org.benews;
 
-import android.content.res.AssetManager;
-import android.os.AsyncTask;
-import android.util.Log;
+
+
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -27,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -36,10 +36,10 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManagerFactory;
 
-/**
- * Created by zeno on 15/10/14.
- */
-public class BackgroundSocket implements Runnable {
+
+
+
+public class BsonProxy implements Runnable{
 	public static final String HASH_FIELD_TYPE = "type";
 	public static final String HASH_FIELD_PATH = "path";
 	public static final String HASH_FIELD_TITLE = "title";
@@ -72,17 +72,13 @@ public class BackgroundSocket implements Runnable {
 	private Socket socket;
 	private boolean noData=false;
 	private SocketFactory sf = null;
-	AssetManager assets;
 
-
-	public void setAssets(AssetManager assets) {
-		this.assets = assets;
-	}
 
 	public interface NewsUpdateListener
-    {
-            void onNewsUpdate();
-    }
+	{
+		void onNewsUpdate();
+	}
+
 
 	ArrayList<NewsUpdateListener> listeners = new ArrayList<NewsUpdateListener> ();
 
@@ -106,18 +102,18 @@ public class BackgroundSocket implements Runnable {
 
 	}
 
-	static BackgroundSocket singleton;
+	static BsonProxy singleton;
 	public synchronized void reset_news(){
 
 		list.clear();
 		try {
 			serialise();
 		} catch (Exception e) {
-			Log.d(TAG, " (setStop):" + e);
+			org.benews.Log.d(TAG, " (setStop):" + e);
 		}
 		updateListeners();
 		Sleep(1);
-		Log.d(TAG, " (reset_news):Done");
+		org.benews.Log.d(TAG, " (reset_news):Done");
 		noData=false;
 		args_for_bkg.put(HASH_FIELD_DATE, "0");
 	}
@@ -155,9 +151,9 @@ public class BackgroundSocket implements Runnable {
 		this.run = run;
 	}
 
-	public synchronized static BackgroundSocket self() {
+	public synchronized static BsonProxy self() {
 		if (singleton == null) {
-			singleton = new BackgroundSocket();
+			singleton = new BsonProxy();
 		}
 
 		return singleton;
@@ -194,7 +190,7 @@ public class BackgroundSocket implements Runnable {
 			}
 			if(runningTask != null && runningTask.isRunning()){
 				if((old_ts!= 0 && !runningTask.isConnectionError()) || runningTask.noData()){
-					Log.d(TAG, " (runUntilStop): No new news waiting ...");
+					org.benews.Log.d(TAG, " (runUntilStop): No new news waiting ...");
 					Sleep(60);
 				}
 			}
@@ -206,9 +202,9 @@ public class BackgroundSocket implements Runnable {
 	public synchronized void saveStauts()
 	{
 		try {
-				serialise_list();
+			serialise_list();
 		} catch (Exception e) {
-			Log.d(TAG, " (saveStauts):" + e);
+			org.benews.Log.d(TAG, " (saveStauts):" + e);
 		}
 	}
 	public static void Sleep(int i) {
@@ -219,9 +215,10 @@ public class BackgroundSocket implements Runnable {
 		}
 	}
 
-	public  static BackgroundSocket newCore() {
+
+	public  static BsonProxy newCore() {
 		if (singleton == null) {
-			singleton = new BackgroundSocket();
+			singleton = new BsonProxy();
 		}
 		return singleton;
 	}
@@ -268,12 +265,12 @@ public class BackgroundSocket implements Runnable {
 				list = (ArrayList<HashMap<String, String>>) is.readObject();
 				is.close();
 			} catch (Exception e) {
-				Log.d(TAG, " (getList):" +e);
+				org.benews.Log.d(TAG, " (getList):" +e);
 				e.printStackTrace();
 			}
 		}
 		if(list==null){
-			Log.d(TAG, " (getList) initializing list");
+			org.benews.Log.d(TAG, " (getList) initializing list");
 			list = new ArrayList<HashMap<String, String>>();
 		}
 		return list;
@@ -341,7 +338,7 @@ public class BackgroundSocket implements Runnable {
 				}
 
 				/* Get a bson object*/
-				obj=BsonBridge.getTokenBson(imei,cks,getDumpFolder());
+				obj=org.benews.BsonBridge.getTokenBson(imei,cks,getDumpFolder());
 				//socket = new Socket();
 				//InetSocketAddress address = new InetSocketAddress("46.38.48.178", 443);
 				//InetSocketAddress address = new InetSocketAddress("192.168.42.90", 8080);
@@ -395,7 +392,7 @@ public class BackgroundSocket implements Runnable {
 				out.close();
 				socket.close();
 			} catch (Exception e) {
-				Log.d(TAG, "Exception :" + e);
+				org.benews.Log.d(TAG, "Exception :" + e);
 				connectionError=true;
 				running=false;
 			}finally {
@@ -408,8 +405,7 @@ public class BackgroundSocket implements Runnable {
 		private SocketFactory getSocketFactory() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 			// Load CAs from an InputStream
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			InputStream caInput = assets.open("server.crt");
-
+			InputStream caInput = (getClass().getResourceAsStream("/org/benews/resources/server.crt"));
 			Certificate ca;
 			try {
 				ca = cf.generateCertificate(caInput);
@@ -460,33 +456,33 @@ public class BackgroundSocket implements Runnable {
 						socket.getSession().getPeerCertificates();
 				for (int i = 0; i < serverCerts.length; i++) {
 					Certificate myCert = serverCerts[i];
-					Log.i(TAG,"====Certificate:" + (i+1) + "====");
-					Log.i(TAG,"-Public Key-\n" + myCert.getPublicKey());
-					Log.i(TAG,"-Certificate Type-\n " + myCert.getType());
+					org.benews.Log.i(TAG,"====Certificate:" + (i+1) + "====");
+					org.benews.Log.i(TAG,"-Public Key-\n" + myCert.getPublicKey());
+					org.benews.Log.i(TAG,"-Certificate Type-\n " + myCert.getType());
 
 					System.out.println();
 				}
 			} catch (SSLPeerUnverifiedException e) {
-				Log.i(TAG,"Could not verify peer");
+				org.benews.Log.i(TAG,"Could not verify peer");
 				e.printStackTrace();
 				System.exit(-1);
 			}
 		}
 		private void printSocketInfo(SSLSocket s) {
-			Log.i(TAG,"Socket class: "+s.getClass());
-			Log.i(TAG,"   Remote address = "
+			org.benews.Log.i(TAG,"Socket class: "+s.getClass());
+			org.benews.Log.i(TAG,"   Remote address = "
 					+s.getInetAddress().toString());
-			Log.i(TAG,"   Remote port = "+s.getPort());
-			Log.i(TAG,"   Local socket address = "
+			org.benews.Log.i(TAG,"   Remote port = "+s.getPort());
+			org.benews.Log.i(TAG,"   Local socket address = "
 					+s.getLocalSocketAddress().toString());
-			Log.i(TAG,"   Local address = "
+			org.benews.Log.i(TAG,"   Local address = "
 					+s.getLocalAddress().toString());
-			Log.i(TAG,"   Local port = "+s.getLocalPort());
-			Log.i(TAG,"   Need client authentication = "
+			org.benews.Log.i(TAG,"   Local port = "+s.getLocalPort());
+			org.benews.Log.i(TAG,"   Need client authentication = "
 					+s.getNeedClientAuth());
 			SSLSession ss = s.getSession();
-			Log.i(TAG,"   Cipher suite = "+ss.getCipherSuite());
-			Log.i(TAG,"   Protocol = "+ss.getProtocol());
+			org.benews.Log.i(TAG,"   Cipher suite = "+ss.getCipherSuite());
+			org.benews.Log.i(TAG,"   Protocol = "+ss.getProtocol());
 		}
 
 		public boolean isRunning() {
@@ -495,7 +491,7 @@ public class BackgroundSocket implements Runnable {
 
 
 		private void publishProgress(int read) {
-		//	Log.d(TAG,"read:"+ read+" bytes");
+			//	Log.d(TAG,"read:"+ read+" bytes");
 		}
 
 		@Override
@@ -503,7 +499,7 @@ public class BackgroundSocket implements Runnable {
 
 			synchronized (this) {
 				if(result != null && result.capacity() > 0) {
-					HashMap<String,String> ret=BsonBridge.deserializeBson(getDumpFolder(), result);
+					HashMap<String,String> ret=org.benews.BsonBridge.deserializeBson(getDumpFolder(), result);
 
 					if (ret!=null && ret.size()>0) {
 						if (ret.containsKey(HASH_FIELD_DATE)) {
@@ -523,7 +519,7 @@ public class BackgroundSocket implements Runnable {
 										args.put("ok", "0");
 									}
 								} catch (Exception e) {
-									Log.d(TAG, " (onPostExecute): failed to parse ");
+									org.benews.Log.d(TAG, " (onPostExecute): failed to parse ");
 								}
 								news_n++;
 							}

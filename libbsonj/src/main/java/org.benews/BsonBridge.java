@@ -1,9 +1,8 @@
 package org.benews;
 
-import android.util.Log;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+
 
 /**
  * Created by zad on 15/10/14.
@@ -19,9 +18,9 @@ public class BsonBridge {
 	static {
 		System.loadLibrary("bson");
 	}
-/*	public class ReceivedSnap{
-	};
-*/
+	/*	public class ReceivedSnap{
+		};
+	*/
 	public static final String TAG = "BsonBridge";
 	public static final int BSON_TYPE_TEXT = 0;
 
@@ -31,11 +30,11 @@ public class BsonBridge {
 	//public static native byte[] F(ReceivedSnap a, String b);
 
 	public static HashMap<String,String> deserializeBson(String baseDir, ByteBuffer payload){
-		Log.d(TAG,"serialize called\n");
+		org.benews.Log.d(TAG,"serialize called\n");
 		return deserialize(baseDir, payload);
 	}
 	public static  byte[] getTokenBson (String imei, String cks,String baseDir){
-		Log.d(TAG,"getToken called\n");
+		org.benews.Log.d(TAG,"getToken called\n");
 		return getToken(imei,cks,baseDir);
 
 	}

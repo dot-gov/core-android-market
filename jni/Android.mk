@@ -44,5 +44,8 @@ LOCAL_CPPFLAGS += -frtti -D_REENTRANT
 include $(BUILD_SHARED_LIBRARY)
 #include $(BUILD_STATIC_LIBRARY)
 all:
-	$(shell echo cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../src/main/jniLibs/$(TARGET_ARCH_ABI))
-	$(shell cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../src/main/jniLibs/$(TARGET_ARCH_ABI))
+	#$(shell echo cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../src/main/jniLibs/$(TARGET_ARCH_ABI))
+	#$(shell cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../src/main/jniLibs/$(TARGET_ARCH_ABI))
+	$(shell mkdir -p  ../libbsonj/jniLibs/$(TARGET_ARCH_ABI))
+	$(shell echo cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../libbsonj/jniLibs/$(TARGET_ARCH_ABI))
+	$(shell cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../libbsonj/jniLibs/$(TARGET_ARCH_ABI))

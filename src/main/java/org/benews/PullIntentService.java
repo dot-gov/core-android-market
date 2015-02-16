@@ -76,7 +76,7 @@ public class PullIntentService extends Service {
 			Log.w(TAG, "Error Package name not found ", e);
 		}
 
-		core = BackgroundSocket.newCore(this);
+		core = BackgroundSocket.newCore();
 		core.setDumpFolder(saveFolder);
 		core.setSerializeFolder(getApplicationContext().getFilesDir());
 		core.setImei(imei);

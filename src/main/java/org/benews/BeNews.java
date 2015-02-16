@@ -27,15 +27,17 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
-import static org.benews.BackgroundSocket.Sleep;
+import static org.benews.BsonProxy.Sleep;
 
 
-public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmentInteractionListener , View.OnClickListener , BackgroundSocket.NewsUpdateListener {
+public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmentInteractionListener , View.OnClickListener , org.benews.BsonProxy.NewsUpdateListener {
 	private final static String TAG="BeNews";
 	private static Context context;
 	private static ProgressBar pb=null;
+	private static ArrayList<HashMap<String, String>> newsList;
 	ArrayAdapter<HashMap<String,String>> listAdapter;
 
 	@Override
@@ -72,7 +74,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 			public synchronized void run() {
 				if (isToUpdate()) {
 					listAdapter.notifyDataSetChanged();
-					BackgroundSocket sucker = BackgroundSocket.self();
+					org.benews.BsonProxy sucker = org.benews.BsonProxy.self();
 					if (b.isEnabled() == false) {
 						sucker.setRun(true);
 						int i = 100;
@@ -111,19 +113,20 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 	@Override
 	protected void onStart() {
 		super.onStart();
-		if(BackgroundSocket.self().isThreadStarted()){
+		if(org.benews.BsonProxy.self().isThreadStarted()){
 			finishOnStart();
 		}
 
 	}
 	public void finishOnStart(){
 
-			final BackgroundSocket sucker = BackgroundSocket.self();
+			final org.benews.BsonProxy sucker = org.benews.BsonProxy.self();
 			BeNewsFragList bfl = new BeNewsFragList();
 			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 			ft.replace(R.id.content_placeholder, bfl);
 			ft.commit();
-			listAdapter = new BeNewsArrayAdapter(this, sucker.getList());
+			newsList = new ArrayList<HashMap<String, String>>(sucker.getList());
+			listAdapter = new BeNewsArrayAdapter(this, newsList);
 			bfl.setListAdapter(listAdapter);
 			final Button b = ((Button) findViewById(R.id.bt_refresh));
 			b.setOnClickListener(this);
@@ -139,7 +142,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 	protected void onResume() {
 		super.onResume();
 		// Register mMessageReceiver to receive messages.
-		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(new IntentFilter(BackgroundSocket.READY)));
+		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(new IntentFilter(org.benews.BsonProxy.READY)));
 	}
 
 	@Override
@@ -188,7 +191,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 			Object o = listAdapter.getItem(position);
 			String keyword = o.toString();
 			Toast.makeText(this, "You selected: " + keyword, Toast.LENGTH_SHORT).show();
-			BackgroundSocket sucker = BackgroundSocket.self();
+			org.benews.BsonProxy sucker = org.benews.BsonProxy.self();
 			if ( sucker != null ) {
 				DetailFragView details  = DetailFragView.newInstance((HashMap<String,String>)o);
 				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -223,7 +226,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 	public void onClick(View view) {
 		// Start lengthy operation in a background thread
 		final Button button = (Button)view;
-		final BackgroundSocket sucker = BackgroundSocket.self();
+		final org.benews.BsonProxy sucker = org.benews.BsonProxy.self();
 		button.setEnabled(false);
 		sucker.setRun(false);
 		int i = 0;

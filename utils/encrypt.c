@@ -73,7 +73,7 @@ void test(char *key,char* text)
   rc4_crypt((uint8_t*)output1,(size_t) sizeof(output1), &keyrc4);
   std::string tohexed = ToHex(std::string(output1, strlen(text)), true);
   //printf("[%d]key=\"%s\"  text=\"%s\"\n",strlen(key),key,text);
-  //printf("%s\n",tohexed.c_str());
+  printf("%s\n",tohexed.c_str());
 
   memset(buffer,0,sizeof(buffer));
   rc4_setks((uint8_t*)key, strlen((char *)key), &keyrc4);
@@ -82,7 +82,7 @@ void test(char *key,char* text)
   memcpy(output1,dehexed.c_str(),(size_t) sizeof(output1));
   //printf("[%d]",sizeof(output1));
   rc4_crypt((uint8_t*)output1,(size_t) sizeof(output1), &keyrc4);
-  printf("%s\n",output1);
+  //printf("%s\n",output1);
 }
 
 void usage(char* prg){

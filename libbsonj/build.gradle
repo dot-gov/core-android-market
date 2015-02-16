@@ -1,0 +1,21 @@
+apply plugin: 'java'
+task buildSharedLib << {
+    println 'Building shared library'
+    exec {
+        workingDir "../"
+        executable "./build.sh"
+    }
+}
+task buildSharedLibRelease << {
+    buildSharedLib
+}
+task buildSharedLibDebug << {
+    buildSharedLib
+}
+
+processResources.dependsOn buildSharedLib
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+}

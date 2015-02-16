@@ -17,10 +17,13 @@
 #      REVISION:  ---
 #===============================================================================
 START_DIR=$PWD
+echo "START_DIR=$START_DIR"
+
+
 KEY="ciao mondo"
 ./createHeader.sh
-echo "utils/encript.py encstring src/libbson/ src/libbson/preprocessed \"$KEY\" utils/tfc"
-python utils/encript.py encstring src/libbson/ src/libbson/preprocessed "$KEY" utils/tfc
+echo "utils/encrypt.py encstring src/libbson/ src/libbson/preprocessed \"$KEY\" utils/tfc"
+python utils/encrypt.py encstring src/libbson/ src/libbson/preprocessed "$KEY" utils/tfc
 cd jni
 ndk-build V=1
 cd -
