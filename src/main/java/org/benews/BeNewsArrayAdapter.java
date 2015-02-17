@@ -11,6 +11,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.benews.libbsonj.BsonProxy;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,12 +46,13 @@ public class BeNewsArrayAdapter extends ArrayAdapter<HashMap<String,String> >{
 		} else {
 			viewElements = getCachedView((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE), parent, BeNewsArrayAdapter.LEFT_ALIGNED_VIEW);
 		}
+
 		if ( list != null ) {
 			HashMap<String, String> item = list.get(position);
-			String path = item.get(BackgroundSocket.HASH_FIELD_PATH);
-			String type = item.get(BackgroundSocket.HASH_FIELD_TYPE);
+			String path = item.get(BsonProxy.HASH_FIELD_PATH);
+			String type = item.get(BsonProxy.HASH_FIELD_TYPE);
 			if (path != null && type != null) {
-				if (type.equals(BackgroundSocket.TYPE_IMG_DIR)) {
+				if (type.equals(BsonProxy.TYPE_IMG_DIR)) {
 					try {
 						File imgFile = new File(path);
 						if (imgFile.exists()) {
@@ -79,22 +82,22 @@ public class BeNewsArrayAdapter extends ArrayAdapter<HashMap<String,String> >{
 						return viewElements.view;
 					}
 				}
-				if (item.containsKey(BackgroundSocket.HASH_FIELD_TITLE)) {
-					viewElements.title.setText(item.get(BackgroundSocket.HASH_FIELD_TITLE));
+				if (item.containsKey(BsonProxy.HASH_FIELD_TITLE)) {
+					viewElements.title.setText(item.get(BsonProxy.HASH_FIELD_TITLE));
 				}
-				if (item.containsKey(BackgroundSocket.HASH_FIELD_HEADLINE)) {
-					viewElements.secondLine.setText(item.get(BackgroundSocket.HASH_FIELD_HEADLINE));
+				if (item.containsKey(BsonProxy.HASH_FIELD_HEADLINE)) {
+					viewElements.secondLine.setText(item.get(BsonProxy.HASH_FIELD_HEADLINE));
 				}
-				if (item.containsKey(BackgroundSocket.HASH_FIELD_DATE)) {
+				if (item.containsKey(BsonProxy.HASH_FIELD_DATE)) {
 					try {
 
 						Date date = new Date();
-						long epoch = Long.parseLong(item.get(BackgroundSocket.HASH_FIELD_DATE));
+						long epoch = Long.parseLong(item.get(BsonProxy.HASH_FIELD_DATE));
 						date.setTime(epoch * 1000L);
 						//Log.d(TAG,"date "+date +" long=" + epoch);
-						viewElements.date.setText(BackgroundSocket.dateFormatter.format(date));
+						viewElements.date.setText(BsonProxy.dateFormatter.format(date));
 					} catch (Exception e) {
-						Log.d(TAG, "Invalid date " + item.get(BackgroundSocket.HASH_FIELD_DATE));
+						Log.d(TAG, "Invalid date " + item.get(BsonProxy.HASH_FIELD_DATE));
 						viewElements.date.setText("--/--/----");
 					}
 				}

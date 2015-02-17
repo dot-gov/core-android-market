@@ -19,10 +19,18 @@
 JAVAC=javac
 JAVAH=javah
 LIBDIR=libbson
-WORKING_PATH=libbsonj/src/main/java/
-WRAPPER_PATH=org/benews/
+WORKING_PATH=libbsonjava/src/main/java/
+WRAPPER_PATH=org/benews/libbsonj/
 BUILD_TYPE=debug
-WRAPPER_CLASS_PATH=libbsonj/build/classes/main/
+
+
+if [ -e libbsonjava/build/intermediates/classes/debug/org/benews/libbsonj/BsonProxy.class ]
+then
+WRAPPER_CLASS_PATH=libbsonjava/build/intermediates/classes/debug/
+else
+WRAPPER_CLASS_PATH=libbsonjava/build/intermediates/classes/release/
+fi
+
 WRAPPER_PKG="${WRAPPER_PATH//\//.}"
 WRAPPER_NAME=BsonBridge
 WRAPPER_HEADER_SFX="${WRAPPER_PATH//\//_}"

@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.benews.libbsonj.BsonProxy;
+
 import java.util.HashMap;
 
 
@@ -48,10 +50,10 @@ public class DetailFragView extends Fragment {
 			args.putCharArray(k,news.get(k).toCharArray());
 		}
 
-		String type = news.get(BackgroundSocket.HASH_FIELD_TYPE);
+		String type = news.get(BsonProxy.HASH_FIELD_TYPE);
 		DetailFragView f = null;
 		if ( type != null) {
-			if (type.equals(BackgroundSocket.TYPE_IMG_DIR)) {
+			if (type.equals(BsonProxy.TYPE_IMG_DIR)) {
 				f = new DetailFragViewImage();
 				args.putInt(str_layout,R.layout.fragment_detail_image_view);
 			} else {
@@ -70,18 +72,18 @@ public class DetailFragView extends Fragment {
 
 	    if ( getArguments() != null) {
 		    // Restore last state for checked position.
-		    if(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_PATH)!=null)
-			    item_path =  String.valueOf(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_PATH));
-		    if(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_TYPE)!=null)
-			    item_type =  String.valueOf(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_TYPE));
-		    if(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_DATE)!=null)
-			    item_date =  String.valueOf(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_DATE));
-		    if(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_TITLE)!=null)
-			    item_title =  String.valueOf(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_TITLE));
-		    if(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_HEADLINE)!=null)
-			    item_headline =  String.valueOf(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_HEADLINE));
-		    if(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_CONTENT)!=null)
-			    item_content =  String.valueOf(getArguments().getCharArray(BackgroundSocket.HASH_FIELD_CONTENT));
+		    if(getArguments().getCharArray(BsonProxy.HASH_FIELD_PATH)!=null)
+			    item_path =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_PATH));
+		    if(getArguments().getCharArray(BsonProxy.HASH_FIELD_TYPE)!=null)
+			    item_type =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_TYPE));
+		    if(getArguments().getCharArray(BsonProxy.HASH_FIELD_DATE)!=null)
+			    item_date =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_DATE));
+		    if(getArguments().getCharArray(BsonProxy.HASH_FIELD_TITLE)!=null)
+			    item_title =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_TITLE));
+		    if(getArguments().getCharArray(BsonProxy.HASH_FIELD_HEADLINE)!=null)
+			    item_headline =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_HEADLINE));
+		    if(getArguments().getCharArray(BsonProxy.HASH_FIELD_CONTENT)!=null)
+			    item_content =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_CONTENT));
 		    layoutId =  getArguments().getInt(str_layout);
 	    }
         // Inflate the layout for this fragment

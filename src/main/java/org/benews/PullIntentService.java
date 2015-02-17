@@ -13,6 +13,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+
+import org.benews.libbsonj.BsonProxy;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -26,7 +29,7 @@ public class PullIntentService extends Service {
 
 	private static final String TAG = "PullIntentService";
 	//	private BackgroundPuller core;
-	private BackgroundSocket core;
+	private BsonProxy core;
 	private String saveFolder;
 	private String imei;
 
@@ -76,14 +79,14 @@ public class PullIntentService extends Service {
 			Log.w(TAG, "Error Package name not found ", e);
 		}
 
-		core = BackgroundSocket.newCore();
+		core = BsonProxy.newCore();
 		core.setDumpFolder(saveFolder);
 		core.setSerializeFolder(getApplicationContext().getFilesDir());
 		core.setImei(imei);
-		core.setAssets(getResources().getAssets());
+		//core.setAssets(getResources().getAssets());
 
 		core.Start();
-		Intent intent = new Intent(BackgroundSocket.READY);
+		Intent intent = new Intent(BsonProxy.READY);
 		// add data
 		intent.putExtra("message", "data");
 		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);

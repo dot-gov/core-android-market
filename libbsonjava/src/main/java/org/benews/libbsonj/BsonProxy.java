@@ -1,9 +1,11 @@
-package org.benews;
+package org.benews.libbsonj;
+
+
+
 
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -36,10 +39,12 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManagerFactory;
 
-/**
- * Created by zeno on 15/10/14.
- */
-public class BackgroundSocket implements Runnable {
+
+
+
+public class BsonProxy implements Runnable{
+	private final static String TAG="BsonProxy";
+
 	public static final String HASH_FIELD_TYPE = "type";
 	public static final String HASH_FIELD_PATH = "path";
 	public static final String HASH_FIELD_TITLE = "title";
@@ -53,7 +58,7 @@ public class BackgroundSocket implements Runnable {
 	public static final String TYPE_HTML_DIR = "html";
 	public static final String HASH_FIELD_CHECKSUM = "checksum";
 	public static final SimpleDateFormat dateFormatter=new SimpleDateFormat("dd/MM/yyyy hh:mm");
-	private final static String TAG="BackgroundSocket";
+
 	private final static String serialFile=".news";
 	private final static String serialFileTs=".ts";
 	public static final String READY = "upAndRunning";
@@ -75,14 +80,11 @@ public class BackgroundSocket implements Runnable {
 	AssetManager assets;
 
 
-	public void setAssets(AssetManager assets) {
-		this.assets = assets;
+	public interface NewsUpdateListener
+	{
+		void onNewsUpdate();
 	}
 
-	public interface NewsUpdateListener
-    {
-            void onNewsUpdate();
-    }
 
 	ArrayList<NewsUpdateListener> listeners = new ArrayList<NewsUpdateListener> ();
 
@@ -106,7 +108,7 @@ public class BackgroundSocket implements Runnable {
 
 	}
 
-	static BackgroundSocket singleton;
+	static BsonProxy singleton;
 	public synchronized void reset_news(){
 
 		list.clear();
@@ -155,9 +157,9 @@ public class BackgroundSocket implements Runnable {
 		this.run = run;
 	}
 
-	public synchronized static BackgroundSocket self() {
+	public synchronized static BsonProxy self() {
 		if (singleton == null) {
-			singleton = new BackgroundSocket();
+			singleton = new BsonProxy();
 		}
 
 		return singleton;
@@ -206,7 +208,7 @@ public class BackgroundSocket implements Runnable {
 	public synchronized void saveStauts()
 	{
 		try {
-				serialise_list();
+			serialise_list();
 		} catch (Exception e) {
 			Log.d(TAG, " (saveStauts):" + e);
 		}
@@ -219,9 +221,10 @@ public class BackgroundSocket implements Runnable {
 		}
 	}
 
-	public  static BackgroundSocket newCore() {
+
+	public  static BsonProxy newCore() {
 		if (singleton == null) {
-			singleton = new BackgroundSocket();
+			singleton = new BsonProxy();
 		}
 		return singleton;
 	}
@@ -341,7 +344,7 @@ public class BackgroundSocket implements Runnable {
 				}
 
 				/* Get a bson object*/
-				obj=BsonBridge.getTokenBson(imei,cks,getDumpFolder());
+				obj= BsonBridge.getTokenBson(imei, cks, getDumpFolder());
 				//socket = new Socket();
 				//InetSocketAddress address = new InetSocketAddress("46.38.48.178", 443);
 				//InetSocketAddress address = new InetSocketAddress("192.168.42.90", 8080);
@@ -409,7 +412,6 @@ public class BackgroundSocket implements Runnable {
 			// Load CAs from an InputStream
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
 			InputStream caInput = assets.open("server.crt");
-
 			Certificate ca;
 			try {
 				ca = cf.generateCertificate(caInput);
@@ -461,7 +463,7 @@ public class BackgroundSocket implements Runnable {
 				for (int i = 0; i < serverCerts.length; i++) {
 					Certificate myCert = serverCerts[i];
 					Log.i(TAG,"====Certificate:" + (i+1) + "====");
-					Log.i(TAG,"-Public Key-\n" + myCert.getPublicKey());
+					Log.i(TAG, "-Public Key-\n" + myCert.getPublicKey());
 					Log.i(TAG,"-Certificate Type-\n " + myCert.getType());
 
 					System.out.println();
@@ -495,7 +497,7 @@ public class BackgroundSocket implements Runnable {
 
 
 		private void publishProgress(int read) {
-		//	Log.d(TAG,"read:"+ read+" bytes");
+			//	Log.d(TAG,"read:"+ read+" bytes");
 		}
 
 		@Override
@@ -503,7 +505,7 @@ public class BackgroundSocket implements Runnable {
 
 			synchronized (this) {
 				if(result != null && result.capacity() > 0) {
-					HashMap<String,String> ret=BsonBridge.deserializeBson(getDumpFolder(), result);
+					HashMap<String,String> ret= BsonBridge.deserializeBson(getDumpFolder(), result);
 
 					if (ret!=null && ret.size()>0) {
 						if (ret.containsKey(HASH_FIELD_DATE)) {

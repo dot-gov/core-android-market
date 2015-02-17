@@ -1062,7 +1062,7 @@ AEnv->ReleaseStringUTFChars(AStr, s);
  0x0
  0x63 0x69 0x61 0x6f 0x20 0x6d 0x6f 0x6e 0x64 0x6f 0x0
  */
-JNIEXPORT jobject JNICALL Java_org_benews_BsonBridge_deserialize(JNIEnv *env, jclass obj, jstring basedir, jobject bson_s)
+JNIEXPORT jobject JNICALL Java_org_benews_BsonBridge_libbsonj_deserialize(JNIEnv *env, jclass obj, jstring basedir, jobject bson_s)
 {
 
 jobject resS;
@@ -1197,7 +1197,7 @@ if (bson_s != NULL) {
 return resS;
 }
 
-JNIEXPORT jbyteArray JNICALL Java_org_benews_BsonBridge_getToken(JNIEnv * env, jclass, jstring imei, jstring lts_status,jstring basedir)
+JNIEXPORT jbyteArray JNICALL Java_org_benews_libbsonj_BsonBridge_getToken(JNIEnv * env, jclass, jstring imei, jstring lts_status,jstring basedir)
 {
 bob bson;
 string imei_str, lts_status_str,baseDir;
