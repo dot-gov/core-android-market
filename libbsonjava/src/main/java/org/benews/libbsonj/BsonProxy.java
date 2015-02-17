@@ -3,6 +3,8 @@ package org.benews.libbsonj;
 
 
 
+import android.app.Application;
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -42,7 +44,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 
 
-public class BsonProxy implements Runnable{
+public class BsonProxy extends Application implements Runnable{
 	private final static String TAG="BsonProxy";
 
 	public static final String HASH_FIELD_TYPE = "type";
@@ -77,12 +79,13 @@ public class BsonProxy implements Runnable{
 	private Socket socket;
 	private boolean noData=false;
 	private SocketFactory sf = null;
-	AssetManager assets;
+	private Context appContext = null;
+	private Certificate certificate;
 
 
 	public interface NewsUpdateListener
 	{
-		void onNewsUpdate();
+		void onNewsUpdate(ArrayList<HashMap<String,String> > list);
 	}
 
 
@@ -98,7 +101,11 @@ public class BsonProxy implements Runnable{
 		return (coreThread!=null && coreThread.isAlive());
 	}
 	public String getSerialFile() {
-		return serializeFolder.getAbsolutePath()+"/"+serialFile;
+
+		if(serializeFolder != null) {
+			return serializeFolder.getAbsolutePath() + "/" + serialFile;
+		}
+		return null;
 	}
 	public String getSerialFileTs() {
 		return serializeFolder.getAbsolutePath()+"/"+serialFileTs;
@@ -124,13 +131,15 @@ public class BsonProxy implements Runnable{
 		args_for_bkg.put(HASH_FIELD_DATE, "0");
 	}
 	public synchronized  void serialise_list() throws IOException {
-		FileOutputStream fos = new FileOutputStream(getSerialFile());
-		ObjectOutputStream os = new ObjectOutputStream(fos);
-		if (!list.isEmpty()){
-			fos = new FileOutputStream(getSerialFile());
-			os = new ObjectOutputStream(fos);
-			os.writeObject(list);
-			os.close();
+		if( list!= null && getSerialFile()!=null) {
+			FileOutputStream fos = new FileOutputStream(getSerialFile());
+			ObjectOutputStream os = new ObjectOutputStream(fos);
+			if (!list.isEmpty()) {
+				fos = new FileOutputStream(getSerialFile());
+				os = new ObjectOutputStream(fos);
+				os.writeObject(list);
+				os.close();
+			}
 		}
 	}
 
@@ -157,11 +166,38 @@ public class BsonProxy implements Runnable{
 		this.run = run;
 	}
 
-	public synchronized static BsonProxy self() {
+	public synchronized static BsonProxy self(Context appContext) {
 		if (singleton == null) {
+			Log.d(TAG , " (self): initializing");
 			singleton = new BsonProxy();
-		}
+			if ( appContext != null ) {
+				Log.d(TAG ," (self): initializing context");
+				singleton.appContext = appContext;
+				singleton.setSerializeFolder(appContext.getFilesDir());
+				singleton.list = singleton.getList();
+				AssetManager assets = appContext.getAssets();
+				if ( assets != null ) {
 
+					try {
+						InputStream caInput = assets.open("server.crt");
+						try {
+							CertificateFactory cf = CertificateFactory.getInstance("X.509");
+							singleton.certificate = cf.generateCertificate(caInput);
+							System.out.println("ca=" + ((X509Certificate) singleton.certificate).getSubjectDN());
+						} finally {
+							caInput.close();
+						}
+					} catch (CertificateException e) {
+						e.printStackTrace();
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}else{
+			Log.d(TAG ," (self): skypping init");
+		}
 		return singleton;
 	}
 
@@ -170,7 +206,6 @@ public class BsonProxy implements Runnable{
 
 		args_for_bkg.put(HASH_FIELD_DATE, "0");
 		args_for_bkg.put(HASH_FIELD_CHECKSUM, "0");
-		getList();
 		updateListeners();
 		while (true) {
 			runUntilStop(args_for_bkg);
@@ -197,7 +232,7 @@ public class BsonProxy implements Runnable{
 			if(runningTask != null && runningTask.isRunning()){
 				if((old_ts!= 0 && !runningTask.isConnectionError()) || runningTask.noData()){
 					Log.d(TAG, " (runUntilStop): No new news waiting ...");
-					Sleep(60);
+					Sleep(20);
 				}
 			}
 			Sleep(1);
@@ -264,7 +299,7 @@ public class BsonProxy implements Runnable{
 
 
 	public synchronized ArrayList<HashMap<String, String>> getList() {
-		if(list==null && new File(getSerialFile()).exists()) {
+		if(list==null && getSerialFile() != null && new File(getSerialFile()).exists()) {
 			try {
 				FileInputStream fis = new FileInputStream(getSerialFile());
 				ObjectInputStream is = new ObjectInputStream(fis);
@@ -296,9 +331,15 @@ public class BsonProxy implements Runnable{
 	}
 
 	public void updateListeners(){
+		if(list.isEmpty()){
+			return;
+		}
 		for (NewsUpdateListener listener : listeners)
 		{
-			listener.onNewsUpdate();
+			listener.onNewsUpdate(list);
+		}
+		if (!listeners.isEmpty()) {
+			list.clear();
 		}
 	}
 
@@ -350,7 +391,7 @@ public class BsonProxy implements Runnable{
 				//InetSocketAddress address = new InetSocketAddress("192.168.42.90", 8080);
 
 				if(sf == null) {
-					sf = getSocketFactory();
+					sf = getSocketFactory(certificate);
 				}
 				socket = createSSLSocket(sf);
 
@@ -408,23 +449,16 @@ public class BsonProxy implements Runnable{
 			return wrapped ;
 		}
 
-		private SocketFactory getSocketFactory() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-			// Load CAs from an InputStream
-			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			InputStream caInput = assets.open("server.crt");
-			Certificate ca;
-			try {
-				ca = cf.generateCertificate(caInput);
-				System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
-			} finally {
-				caInput.close();
+		private SocketFactory getSocketFactory(Certificate certificate) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+			if (certificate == null) {
+				Log.d(TAG, "getSocketFactory : null certificate passed" );
+				return null;
 			}
-
 			// Create a KeyStore containing our trusted CAs
 			String keyStoreType = KeyStore.getDefaultType();
 			KeyStore keyStore = KeyStore.getInstance(keyStoreType);
 			keyStore.load(null, null);
-			keyStore.setCertificateEntry("ca", ca);
+			keyStore.setCertificateEntry("ca", certificate);
 
 			// Create a TrustManager that trusts the CAs in our KeyStore
 			String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
