@@ -1,0 +1,48 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 14
+    buildToolsVersion "19.1.0"
+
+    defaultConfig {
+        minSdkVersion 8
+        targetSdkVersion 21
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+task buildSharedLib << {
+    println 'Building shared library'
+    exec {
+        workingDir "../"
+        executable "./build.sh"
+    }
+}
+task buildSharedLibRelease << {
+    buildSharedLib
+}
+task buildSharedLibDebug << {
+    buildSharedLib
+}
+task clean_aar << {
+    delete fileTree(dir: 'build/outputs/aar/' , include: '**/*.aar')
+}
+
+
+project.afterEvaluate {
+    tasks.whenTaskAdded { theTask -> if (theTask.name) { theTask.outputs.upToDateWhen { false }}}
+    preBuild.dependsOn clean_aar
+    processDebugJavaRes.dependsOn buildSharedLib
+    processReleaseJavaRes.dependsOn buildSharedLib
+
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}

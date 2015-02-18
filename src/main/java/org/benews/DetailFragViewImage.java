@@ -5,12 +5,10 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
+
+import org.benews.libbsonj.BsonProxy;
 
 import java.io.File;
 import java.util.Date;
@@ -26,7 +24,7 @@ public class DetailFragViewImage extends DetailFragView {
 	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		if (item_path != null && item_type != null) {
-			if (item_type.equals(BeNewsArrayAdapter.TYPE_IMG_DIR)) {
+			if (item_type.equals(BsonProxy.TYPE_IMG_DIR)) {
 				File imgFile = new File(item_path);
 				if (imgFile.exists()) {
 					try {
@@ -60,7 +58,7 @@ public class DetailFragViewImage extends DetailFragView {
 					long epoch = Long.parseLong(item_date);
 					date_f.setTime(epoch * 1000L);
 					//Log.d(TAG,"date "+date +" long=" + epoch);
-					((TextView) date).setText(BeNewsArrayAdapter.dateFormatter.format(date_f));
+					((TextView) date).setText(BsonProxy.dateFormatter.format(date_f));
 				} catch (Exception e) {
 					Log.d(TAG, "Invalid date " + item_date);
 					((TextView) date).setText("--/--/----");

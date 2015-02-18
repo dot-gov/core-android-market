@@ -2,13 +2,10 @@ package org.benews;
 
 
 
-import android.app.DatePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
@@ -16,7 +13,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,16 +23,28 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
+import org.benews.libbsonj.BsonProxy;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-import static org.benews.BackgroundSocket.Sleep;
+import static org.benews.libbsonj.BsonProxy.Sleep;
 
 
-public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmentInteractionListener , View.OnClickListener , BackgroundSocket.NewsUpdateListener {
+public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmentInteractionListener , View.OnClickListener ,BsonProxy.NewsUpdateListener {
 	private final static String TAG="BeNews";
 	private static Context context;
 	private static ProgressBar pb=null;
+	private static ArrayList<HashMap<String, String>> newsList;
 	ArrayAdapter<HashMap<String,String>> listAdapter;
+	private File serializeFolder;
+	private final static String serialFile="news_list";
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +52,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 		setContentView(R.layout.activity_be_news);
 		BitmapHelper.init(getResources().getDisplayMetrics().density);
 		context = getApplicationContext();
-		final Intent serviceIntent = new Intent(context, PullIntentService.class);
+		final Intent serviceIntent = new Intent(context, org.benews.libbsonj.PullIntentService.class);
 		context.startService(serviceIntent);
     }
 
@@ -65,25 +73,26 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 	}
 
 	@Override
-	public synchronized void onNewsUpdate() {
-		setToUpdate(true);
-		final Button b = ((Button) findViewById(R.id.bt_refresh));
+	public synchronized void onNewsUpdate(ArrayList<HashMap<String,String> > list) {
+		if(!list.isEmpty()) {
+			for ( HashMap<String,String> h: list){
+				if (!newsList.contains(h)){
+					newsList.add(h);
+				}
+			}
+			try {
+				serialise();
+				setToUpdate(true);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		//final Button b = ((Button) findViewById(R.id.bt_refresh));
 		this.runOnUiThread(new Runnable() {
 			public synchronized void run() {
 				if (isToUpdate()) {
-					listAdapter.notifyDataSetChanged();
-					BackgroundSocket sucker = BackgroundSocket.self();
-					if (b.isEnabled() == false) {
-						sucker.setRun(true);
-						int i = 100;
-						while (sucker.isRunning() && i > 0) {
-							i -= 20;
-							setProgressBar(i);
-							Sleep(1);
-						}
-						setProgressBar(0);
-						b.setEnabled(true);
-					}
 					listAdapter.notifyDataSetChanged();
 					setToUpdate(false);
 				}
@@ -111,19 +120,64 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 	@Override
 	protected void onStart() {
 		super.onStart();
-		if(BackgroundSocket.self().isThreadStarted()){
+		if(BsonProxy.self(getAppContext()).isThreadStarted()){
 			finishOnStart();
 		}
 
 	}
+	public synchronized ArrayList<HashMap<String, String>> getList() {
+		if(newsList==null && new File(getSerialFile()).exists()) {
+			try {
+				FileInputStream fis = new FileInputStream(getSerialFile());
+				ObjectInputStream is = new ObjectInputStream(fis);
+				newsList = (ArrayList<HashMap<String, String>>) is.readObject();
+				is.close();
+			} catch (Exception e) {
+				Log.d(TAG, " (getList):" +e);
+				e.printStackTrace();
+			}
+		}
+		if(newsList==null){
+			Log.d(TAG, " (getList) initializing list");
+			newsList = new ArrayList<HashMap<String, String>>();
+		}
+		return newsList;
+	}
+
+
+	public String getSerialFile() {
+		if (serializeFolder == null ){
+			serializeFolder = getAppContext().getFilesDir();
+		}
+		return serializeFolder.getAbsolutePath()+"/"+serialFile;
+	}
+	public void setSerializeFolder(File filesDir) {
+		this.serializeFolder=filesDir;
+	}
+	public synchronized  void serialise_list() throws IOException {
+		FileOutputStream fos = new FileOutputStream(getSerialFile());
+		ObjectOutputStream os = new ObjectOutputStream(fos);
+		if (!newsList.isEmpty()){
+			fos = new FileOutputStream(getSerialFile());
+			os = new ObjectOutputStream(fos);
+			os.writeObject(newsList);
+			os.close();
+		}
+	}
+
+	public synchronized  void serialise() throws IOException {
+		serialise_list();
+	}
+
 	public void finishOnStart(){
 
-			final BackgroundSocket sucker = BackgroundSocket.self();
+			final BsonProxy sucker = BsonProxy.self(getAppContext());
 			BeNewsFragList bfl = new BeNewsFragList();
 			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 			ft.replace(R.id.content_placeholder, bfl);
 			ft.commit();
-			listAdapter = new BeNewsArrayAdapter(this, sucker.getList());
+			newsList = new ArrayList<HashMap<String, String>>(getList());
+			listAdapter = new BeNewsArrayAdapter(this, newsList);
 			bfl.setListAdapter(listAdapter);
 			final Button b = ((Button) findViewById(R.id.bt_refresh));
 			b.setOnClickListener(this);
@@ -139,17 +193,20 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 	protected void onResume() {
 		super.onResume();
 		// Register mMessageReceiver to receive messages.
-		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(new IntentFilter(BackgroundSocket.READY)));
+		//LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(new IntentFilter(BsonProxy.READY)));
+		if(BsonProxy.self(getAppContext()).isThreadStarted()){
+			finishOnStart();
+		}
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
 		// Unregister since the activity is not visible
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-		super.onPause();
+		//LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+		//super.onPause();
 	}
-
+/*
 	// handler for received Intents for the "my-event" event
 	private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
 		@Override
@@ -160,6 +217,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 			finishOnStart();
 		}
 	};
+	*/
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -188,15 +246,13 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 			Object o = listAdapter.getItem(position);
 			String keyword = o.toString();
 			Toast.makeText(this, "You selected: " + keyword, Toast.LENGTH_SHORT).show();
-			BackgroundSocket sucker = BackgroundSocket.self();
-			if ( sucker != null ) {
-				DetailFragView details  = DetailFragView.newInstance((HashMap<String,String>)o);
-				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-				ft.replace(R.id.content_placeholder, details);
-				//ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-				ft.addToBackStack("DETAILS");
-				ft.commit();
-			}
+			DetailFragView details = DetailFragView.newInstance((HashMap<String, String>) o);
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+			ft.replace(R.id.content_placeholder, details);
+			//ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+			ft.addToBackStack("DETAILS");
+			ft.commit();
+
 		}catch (Exception e){
 			Log.d(TAG,"Exception:" + e);
 		}
@@ -223,7 +279,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 	public void onClick(View view) {
 		// Start lengthy operation in a background thread
 		final Button button = (Button)view;
-		final BackgroundSocket sucker = BackgroundSocket.self();
+		final BsonProxy sucker = BsonProxy.self(getAppContext());
 		button.setEnabled(false);
 		sucker.setRun(false);
 		int i = 0;

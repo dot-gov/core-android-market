@@ -23,8 +23,9 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(CODE_PATH)/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(CODE_PATH)/../include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(CODE_PATH)/../include/bsonl/
 LOCAL_SRC_FILES := $(CODE_PATH)/bson.cpp
-BUILD_PRODUCTS_DIR := $(shell pwd)/../libs/$(TARGET_ARCH_ABI)
-
+BUILD_PRODUCTS_DIR := $(shell pwd)/../libbsonjava/src/main/jniLibs/$(TARGET_ARCH_ABI)
+#override the standard installation directory, overrides $PROJECT_PATH/libs/$ABI/
+NDK_APP_DST_DIR := $(shell pwd)/../libbsonjava/src/main/jniLibs/$(TARGET_ARCH_ABI)
 
 # <boost library inclusion>
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(CODE_PATH)/../include/boost/include/boost-1_53
@@ -43,6 +44,9 @@ LOCAL_CPPFLAGS += -frtti -D_REENTRANT
 
 include $(BUILD_SHARED_LIBRARY)
 #include $(BUILD_STATIC_LIBRARY)
-all:
-	$(shell echo cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../src/main/jniLibs/$(TARGET_ARCH_ABI))
-	$(shell cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../src/main/jniLibs/$(TARGET_ARCH_ABI))
+#all:
+	#$(shell echo cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../src/main/jniLibs/$(TARGET_ARCH_ABI))
+	#$(shell rm ../libs/ -r)
+	#$(shell mkdir -p  ../libbsonjava/libs/$(TARGET_ARCH_ABI))
+	#$(shell echo cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../libbsonjava/jni/$(TARGET_ARCH_ABI))
+	#$(shell cp  $(BUILD_PRODUCTS_DIR)/libbson.so ../libbsonjava/jni/$(TARGET_ARCH_ABI))

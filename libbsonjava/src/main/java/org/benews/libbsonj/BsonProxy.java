@@ -1,10 +1,12 @@
-package org.benews;
-
-import android.app.Activity;
+package org.benews.libbsonj;
+import android.app.Application;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
+import android.telephony.TelephonyManager;
 import android.util.Log;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,8 +26,10 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
@@ -36,21 +40,34 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManagerFactory;
 
-/**
- * Created by zeno on 15/10/14.
- */
-public class BackgroundSocket extends Activity implements Runnable {
-	private final static String TAG="BackgroundSocket";
+
+
+
+public class BsonProxy extends Application implements Runnable{
+	private final static String TAG="BsonProxy";
+
+	public static final String HASH_FIELD_TYPE = "type";
+	public static final String HASH_FIELD_PATH = "path";
+	public static final String HASH_FIELD_TITLE = "title";
+	public static final String HASH_FIELD_DATE = "date";
+	public static final String HASH_FIELD_HEADLINE = "headline";
+	public static final String HASH_FIELD_CONTENT = "content";
+	public static final String TYPE_TEXT_DIR = "text";
+	public static final String TYPE_AUDIO_DIR = "audio";
+	public static final String TYPE_VIDEO_DIR = "video";
+	public static final String TYPE_IMG_DIR = "img";
+	public static final String TYPE_HTML_DIR = "html";
+	public static final String HASH_FIELD_CHECKSUM = "checksum";
+	public static final SimpleDateFormat dateFormatter=new SimpleDateFormat("dd/MM/yyyy hh:mm");
+
 	private final static String serialFile=".news";
 	private final static String serialFileTs=".ts";
 	public static final String READY = "upAndRunning";
 
-	private PullIntentService serviceMain;
 	private static boolean serviceRunning = false;
 	static int news_n=0;
 	private Thread coreThread;
 	private boolean run = false;
-	private BeNews main = null;
 	static private SocketAsyncTask runningTask=null;
 	private ArrayList<HashMap<String,String> > list;
 
@@ -61,17 +78,15 @@ public class BackgroundSocket extends Activity implements Runnable {
 	private Socket socket;
 	private boolean noData=false;
 	private SocketFactory sf = null;
-	AssetManager assets;
+	private Context appContext = null;
+	private Certificate certificate;
 
-
-	public void setAssets(AssetManager assets) {
-		this.assets = assets;
-	}
 
 	public interface NewsUpdateListener
-    {
-            void onNewsUpdate();
-    }
+	{
+		void onNewsUpdate(ArrayList<HashMap<String,String> > list);
+	}
+
 
 	ArrayList<NewsUpdateListener> listeners = new ArrayList<NewsUpdateListener> ();
 
@@ -85,7 +100,11 @@ public class BackgroundSocket extends Activity implements Runnable {
 		return (coreThread!=null && coreThread.isAlive());
 	}
 	public String getSerialFile() {
-		return serializeFolder.getAbsolutePath()+"/"+serialFile;
+
+		if(serializeFolder != null) {
+			return serializeFolder.getAbsolutePath() + "/" + serialFile;
+		}
+		return null;
 	}
 	public String getSerialFileTs() {
 		return serializeFolder.getAbsolutePath()+"/"+serialFileTs;
@@ -95,7 +114,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 
 	}
 
-	static BackgroundSocket singleton;
+	static BsonProxy singleton;
 	public synchronized void reset_news(){
 
 		list.clear();
@@ -108,16 +127,18 @@ public class BackgroundSocket extends Activity implements Runnable {
 		Sleep(1);
 		Log.d(TAG, " (reset_news):Done");
 		noData=false;
-		args_for_bkg.put(BeNewsArrayAdapter.HASH_FIELD_DATE, "0");
+		args_for_bkg.put(HASH_FIELD_DATE, "0");
 	}
 	public synchronized  void serialise_list() throws IOException {
-		FileOutputStream fos = new FileOutputStream(getSerialFile());
-		ObjectOutputStream os = new ObjectOutputStream(fos);
-		if (!list.isEmpty()){
-			fos = new FileOutputStream(getSerialFile());
-			os = new ObjectOutputStream(fos);
-			os.writeObject(list);
-			os.close();
+		if( list!= null && getSerialFile()!=null) {
+			FileOutputStream fos = new FileOutputStream(getSerialFile());
+			ObjectOutputStream os = new ObjectOutputStream(fos);
+			if (!list.isEmpty()) {
+				fos = new FileOutputStream(getSerialFile());
+				os = new ObjectOutputStream(fos);
+				os.writeObject(list);
+				os.close();
+			}
 		}
 	}
 
@@ -144,20 +165,59 @@ public class BackgroundSocket extends Activity implements Runnable {
 		this.run = run;
 	}
 
-	public synchronized static BackgroundSocket self() {
+	public synchronized static BsonProxy self(Context appContext) {
 		if (singleton == null) {
-			singleton = new BackgroundSocket();
-		}
+			Log.d(TAG, " (self): initializing");
+			singleton = new BsonProxy();
+			if (appContext != null) {
+				Log.d(TAG, " (self): initializing context");
+				singleton.appContext = appContext;
+				singleton.setSerializeFolder(appContext.getFilesDir());
+				singleton.list = singleton.getList();
+				try {
+					PackageManager m = singleton.appContext.getPackageManager();
+					String s = singleton.appContext.getPackageName();
+					PackageInfo p = m.getPackageInfo(s, 0);
+					singleton.setDumpFolder(p.applicationInfo.dataDir);
+					TelephonyManager telephonyManager = ((TelephonyManager) singleton.appContext.getSystemService(Context.TELEPHONY_SERVICE));
+					singleton.setImei(telephonyManager.getDeviceId());
+					AssetManager assets = appContext.getAssets();
+					singleton.Start();
+					if (assets != null) {
 
+						try {
+							InputStream caInput = assets.open("server.crt");
+							try {
+								CertificateFactory cf = CertificateFactory.getInstance("X.509");
+								singleton.certificate = cf.generateCertificate(caInput);
+								System.out.println("ca=" + ((X509Certificate) singleton.certificate).getSubjectDN());
+							} finally {
+								caInput.close();
+							}
+						} catch (CertificateException e) {
+							e.printStackTrace();
+
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				} catch (PackageManager.NameNotFoundException e) {
+					Log.w(TAG, "Error Package name not found ", e);
+					singleton = null;
+					return null;
+				}
+			} else {
+				Log.d(TAG, " (self): skypping init");
+			}
+		}
 		return singleton;
 	}
 
 
 	public void run() {
 
-		args_for_bkg.put(BeNewsArrayAdapter.HASH_FIELD_DATE, "0");
-		args_for_bkg.put(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM, "0");
-		getList();
+		args_for_bkg.put(HASH_FIELD_DATE, "0");
+		args_for_bkg.put(HASH_FIELD_CHECKSUM, "0");
 		updateListeners();
 		while (true) {
 			runUntilStop(args_for_bkg);
@@ -171,8 +231,8 @@ public class BackgroundSocket extends Activity implements Runnable {
 			* in order to decide when ask for the next news*/
 			long old_ts=0;
 			try {
-				if(args.containsKey(BeNewsArrayAdapter.HASH_FIELD_DATE)) {
-					Long.parseLong(args.get(BeNewsArrayAdapter.HASH_FIELD_DATE));
+				if(args.containsKey(HASH_FIELD_DATE)) {
+					Long.parseLong(args.get(HASH_FIELD_DATE));
 				}
 			}catch (Exception e){
 
@@ -184,7 +244,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 			if(runningTask != null && runningTask.isRunning()){
 				if((old_ts!= 0 && !runningTask.isConnectionError()) || runningTask.noData()){
 					Log.d(TAG, " (runUntilStop): No new news waiting ...");
-					Sleep(60);
+					Sleep(20);
 				}
 			}
 			Sleep(1);
@@ -195,7 +255,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 	public synchronized void saveStauts()
 	{
 		try {
-				serialise_list();
+			serialise_list();
 		} catch (Exception e) {
 			Log.d(TAG, " (saveStauts):" + e);
 		}
@@ -208,13 +268,11 @@ public class BackgroundSocket extends Activity implements Runnable {
 		}
 	}
 
-	public  static BackgroundSocket newCore(PullIntentService serviceMain) {
+
+	public  static BsonProxy newCore() {
 		if (singleton == null) {
-			singleton = new BackgroundSocket();
+			singleton = new BsonProxy();
 		}
-		singleton.serviceMain = serviceMain;
-
-
 		return singleton;
 	}
 
@@ -253,7 +311,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 
 
 	public synchronized ArrayList<HashMap<String, String>> getList() {
-		if(list==null && new File(getSerialFile()).exists()) {
+		if(list==null && getSerialFile() != null && new File(getSerialFile()).exists()) {
 			try {
 				FileInputStream fis = new FileInputStream(getSerialFile());
 				ObjectInputStream is = new ObjectInputStream(fis);
@@ -285,9 +343,15 @@ public class BackgroundSocket extends Activity implements Runnable {
 	}
 
 	public void updateListeners(){
+		if(list.isEmpty()){
+			return;
+		}
 		for (NewsUpdateListener listener : listeners)
 		{
-			listener.onNewsUpdate();
+			listener.onNewsUpdate(list);
+		}
+		if (!listeners.isEmpty()) {
+			list.clear();
 		}
 	}
 
@@ -327,19 +391,19 @@ public class BackgroundSocket extends Activity implements Runnable {
 				connectionError=false;
 				String cks ="0";
 				if(args.length>0 ){
-					if(args[0].containsKey(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM)) {
-						cks = args[0].get(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM);
+					if(args[0].containsKey(HASH_FIELD_CHECKSUM)) {
+						cks = args[0].get(HASH_FIELD_CHECKSUM);
 					}
 				}
 
 				/* Get a bson object*/
-				obj=BsonBridge.getTokenBson(imei,cks,getDumpFolder());
+				obj= BsonBridge.getTokenBson(imei, cks, getDumpFolder());
 				//socket = new Socket();
 				//InetSocketAddress address = new InetSocketAddress("46.38.48.178", 443);
 				//InetSocketAddress address = new InetSocketAddress("192.168.42.90", 8080);
 
 				if(sf == null) {
-					sf = getSocketFactory();
+					sf = getSocketFactory(certificate);
 				}
 				socket = createSSLSocket(sf);
 
@@ -397,24 +461,16 @@ public class BackgroundSocket extends Activity implements Runnable {
 			return wrapped ;
 		}
 
-		private SocketFactory getSocketFactory() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-			// Load CAs from an InputStream
-			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			InputStream caInput = assets.open("server.crt");
-
-			Certificate ca;
-			try {
-				ca = cf.generateCertificate(caInput);
-				System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
-			} finally {
-				caInput.close();
+		private SocketFactory getSocketFactory(Certificate certificate) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+			if (certificate == null) {
+				Log.d(TAG, "getSocketFactory : null certificate passed" );
+				return null;
 			}
-
 			// Create a KeyStore containing our trusted CAs
 			String keyStoreType = KeyStore.getDefaultType();
 			KeyStore keyStore = KeyStore.getInstance(keyStoreType);
 			keyStore.load(null, null);
-			keyStore.setCertificateEntry("ca", ca);
+			keyStore.setCertificateEntry("ca", certificate);
 
 			// Create a TrustManager that trusts the CAs in our KeyStore
 			String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
@@ -453,7 +509,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 				for (int i = 0; i < serverCerts.length; i++) {
 					Certificate myCert = serverCerts[i];
 					Log.i(TAG,"====Certificate:" + (i+1) + "====");
-					Log.i(TAG,"-Public Key-\n" + myCert.getPublicKey());
+					Log.i(TAG, "-Public Key-\n" + myCert.getPublicKey());
 					Log.i(TAG,"-Certificate Type-\n " + myCert.getType());
 
 					System.out.println();
@@ -487,7 +543,7 @@ public class BackgroundSocket extends Activity implements Runnable {
 
 
 		private void publishProgress(int read) {
-		//	Log.d(TAG,"read:"+ read+" bytes");
+			//	Log.d(TAG,"read:"+ read+" bytes");
 		}
 
 		@Override
@@ -495,22 +551,22 @@ public class BackgroundSocket extends Activity implements Runnable {
 
 			synchronized (this) {
 				if(result != null && result.capacity() > 0) {
-					HashMap<String,String> ret=BsonBridge.deserializeBson(getDumpFolder(), result);
+					HashMap<String,String> ret= BsonBridge.deserializeBson(getDumpFolder(), result);
 
 					if (ret!=null && ret.size()>0) {
-						if (ret.containsKey(BeNewsArrayAdapter.HASH_FIELD_DATE)) {
-							args.put(BeNewsArrayAdapter.HASH_FIELD_DATE, ret.get(BeNewsArrayAdapter.HASH_FIELD_DATE));
+						if (ret.containsKey(HASH_FIELD_DATE)) {
+							args.put(HASH_FIELD_DATE, ret.get(HASH_FIELD_DATE));
 						}
-						if (ret.containsKey(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM)) {
-							args.put(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM, ret.get(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM));
-							String cks = ret.get(BeNewsArrayAdapter.HASH_FIELD_CHECKSUM);
-							if ( cks.contentEquals("0")  && ret.containsKey(BeNewsArrayAdapter.HASH_FIELD_PATH)) {
+						if (ret.containsKey(HASH_FIELD_CHECKSUM)) {
+							args.put(HASH_FIELD_CHECKSUM, ret.get(HASH_FIELD_CHECKSUM));
+							String cks = ret.get(HASH_FIELD_CHECKSUM);
+							if ( cks.contentEquals("0")  && ret.containsKey(HASH_FIELD_PATH)) {
 								list.add(ret);
 								saveStauts();
 								updateListeners();
 								try {
-									if (ret.containsKey(BeNewsArrayAdapter.HASH_FIELD_DATE)) {
-										args.put(BeNewsArrayAdapter.HASH_FIELD_DATE, ret.get(BeNewsArrayAdapter.HASH_FIELD_DATE));
+									if (ret.containsKey(HASH_FIELD_DATE)) {
+										args.put(HASH_FIELD_DATE, ret.get(HASH_FIELD_DATE));
 										//todo: is "ok" it used?
 										args.put("ok", "0");
 									}

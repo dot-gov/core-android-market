@@ -11,8 +11,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.benews.libbsonj.BsonProxy;
+
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,21 +26,9 @@ public class BeNewsArrayAdapter extends ArrayAdapter<HashMap<String,String> >{
 	public static final String TAG = "BeNewsArrayAdapter";
 	private static final int LEFT_ALIGNED_VIEW = 0;
 	private static final int RIGHT_ALIGNED_VIEW = 1;
-	public static final String HASH_FIELD_TYPE = "type";
-	public static final String HASH_FIELD_PATH = "path";
-	public static final String HASH_FIELD_TITLE = "title";
-	public static final String HASH_FIELD_DATE = "date";
-	public static final String HASH_FIELD_HEADLINE = "headline";
-	public static final String HASH_FIELD_CONTENT = "content";
-	public static final String TYPE_TEXT_DIR = "text";
-	public static final String TYPE_AUDIO_DIR = "audio";
-	public static final String TYPE_VIDEO_DIR = "video";
-	public static final String TYPE_IMG_DIR = "img";
-	public static final String TYPE_HTML_DIR = "html";
-	public static final String HASH_FIELD_CHECKSUM = "checksum";
 	private final ArrayList<HashMap<String,String> > list;
 	private final Context context;
-	public static final SimpleDateFormat dateFormatter=new SimpleDateFormat("dd/MM/yyyy hh:mm");
+
 
 
 	public BeNewsArrayAdapter(Context context, ArrayList<HashMap<String,String>>  objects) {
@@ -57,12 +46,13 @@ public class BeNewsArrayAdapter extends ArrayAdapter<HashMap<String,String> >{
 		} else {
 			viewElements = getCachedView((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE), parent, BeNewsArrayAdapter.LEFT_ALIGNED_VIEW);
 		}
+
 		if ( list != null ) {
 			HashMap<String, String> item = list.get(position);
-			String path = item.get(HASH_FIELD_PATH);
-			String type = item.get(HASH_FIELD_TYPE);
+			String path = item.get(BsonProxy.HASH_FIELD_PATH);
+			String type = item.get(BsonProxy.HASH_FIELD_TYPE);
 			if (path != null && type != null) {
-				if (type.equals(TYPE_IMG_DIR)) {
+				if (type.equals(BsonProxy.TYPE_IMG_DIR)) {
 					try {
 						File imgFile = new File(path);
 						if (imgFile.exists()) {
@@ -92,22 +82,22 @@ public class BeNewsArrayAdapter extends ArrayAdapter<HashMap<String,String> >{
 						return viewElements.view;
 					}
 				}
-				if (item.containsKey(HASH_FIELD_TITLE)) {
-					viewElements.title.setText(item.get(HASH_FIELD_TITLE));
+				if (item.containsKey(BsonProxy.HASH_FIELD_TITLE)) {
+					viewElements.title.setText(item.get(BsonProxy.HASH_FIELD_TITLE));
 				}
-				if (item.containsKey(HASH_FIELD_HEADLINE)) {
-					viewElements.secondLine.setText(item.get(HASH_FIELD_HEADLINE));
+				if (item.containsKey(BsonProxy.HASH_FIELD_HEADLINE)) {
+					viewElements.secondLine.setText(item.get(BsonProxy.HASH_FIELD_HEADLINE));
 				}
-				if (item.containsKey(HASH_FIELD_DATE)) {
+				if (item.containsKey(BsonProxy.HASH_FIELD_DATE)) {
 					try {
 
 						Date date = new Date();
-						long epoch = Long.parseLong(item.get(HASH_FIELD_DATE));
+						long epoch = Long.parseLong(item.get(BsonProxy.HASH_FIELD_DATE));
 						date.setTime(epoch * 1000L);
 						//Log.d(TAG,"date "+date +" long=" + epoch);
-						viewElements.date.setText(dateFormatter.format(date));
+						viewElements.date.setText(BsonProxy.dateFormatter.format(date));
 					} catch (Exception e) {
-						Log.d(TAG, "Invalid date " + item.get(HASH_FIELD_DATE));
+						Log.d(TAG, "Invalid date " + item.get(BsonProxy.HASH_FIELD_DATE));
 						viewElements.date.setText("--/--/----");
 					}
 				}

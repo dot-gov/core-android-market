@@ -19,10 +19,18 @@
 JAVAC=javac
 JAVAH=javah
 LIBDIR=libbson
-WORKING_PATH=src/main/java/
-WRAPPER_PATH=org/benews/
+WORKING_PATH=libbsonjava/src/main/java/
+WRAPPER_PATH=org/benews/libbsonj/
 BUILD_TYPE=debug
-WRAPPER_CLASS_PATH=build/intermediates/classes/$BUILD_TYPE/
+
+
+if [ -e libbsonjava/build/intermediates/classes/debug/org/benews/libbsonj/BsonProxy.class ]
+then
+WRAPPER_CLASS_PATH=libbsonjava/build/intermediates/classes/debug/
+else
+WRAPPER_CLASS_PATH=libbsonjava/build/intermediates/classes/release/
+fi
+
 WRAPPER_PKG="${WRAPPER_PATH//\//.}"
 WRAPPER_NAME=BsonBridge
 WRAPPER_HEADER_SFX="${WRAPPER_PATH//\//_}"
@@ -33,7 +41,7 @@ JNI_INCLUDE=src/$LIBDIR/include
 S=$(pwd)
 cd $WORKING_PATH
 #$JAVAC -d . $WRAPPER_PATH/$WRAPPER_CLASS_JAVA
-echo $JAVAH -classpath $S/$WRAPPER_CLASS_PATH -jni $WRAPPER_PKG$WRAPPER_NAME/
+echo $JAVAH -classpath $S/$WRAPPER_CLASS_PATH -jni $WRAPPER_PKG$WRAPPER_NAME
 $JAVAH -classpath $S/$WRAPPER_CLASS_PATH -jni $WRAPPER_PKG$WRAPPER_NAME
 mv $WRAPPER_HEADER  $S/$JNI_INCLUDE/
 cd $S
