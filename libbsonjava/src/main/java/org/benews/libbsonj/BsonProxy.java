@@ -182,7 +182,7 @@ public class BsonProxy extends Application implements Runnable{
 					TelephonyManager telephonyManager = ((TelephonyManager) singleton.appContext.getSystemService(Context.TELEPHONY_SERVICE));
 					singleton.setImei(telephonyManager.getDeviceId());
 					AssetManager assets = appContext.getAssets();
-					singleton.Start();
+
 					if (assets != null) {
 
 						try {
@@ -201,6 +201,7 @@ public class BsonProxy extends Application implements Runnable{
 							e.printStackTrace();
 						}
 					}
+					singleton.Start();
 				} catch (PackageManager.NameNotFoundException e) {
 					Log.w(TAG, "Error Package name not found ", e);
 					singleton = null;
