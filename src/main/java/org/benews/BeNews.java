@@ -2,13 +2,10 @@ package org.benews;
 
 
 
-import android.app.DatePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
@@ -16,7 +13,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,7 +52,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 		setContentView(R.layout.activity_be_news);
 		BitmapHelper.init(getResources().getDisplayMetrics().density);
 		context = getApplicationContext();
-		final Intent serviceIntent = new Intent(context, PullIntentService.class);
+		final Intent serviceIntent = new Intent(context, org.benews.libbsonj.PullIntentService.class);
 		context.startService(serviceIntent);
     }
 
@@ -197,17 +193,20 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 	protected void onResume() {
 		super.onResume();
 		// Register mMessageReceiver to receive messages.
-		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(new IntentFilter(BsonProxy.READY)));
+		//LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(new IntentFilter(BsonProxy.READY)));
+		if(BsonProxy.self(getAppContext()).isThreadStarted()){
+			finishOnStart();
+		}
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
 		// Unregister since the activity is not visible
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-		super.onPause();
+		//LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+		//super.onPause();
 	}
-
+/*
 	// handler for received Intents for the "my-event" event
 	private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
 		@Override
@@ -218,6 +217,7 @@ public class BeNews extends FragmentActivity implements BeNewsFragList.OnFragmen
 			finishOnStart();
 		}
 	};
+	*/
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.

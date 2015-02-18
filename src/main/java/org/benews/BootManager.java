@@ -12,7 +12,7 @@ public class BootManager extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 
 		// le due righe seguenti potrebbero diventare:
-		final Intent serviceIntent = new Intent(context, PullIntentService.class);
+		final Intent serviceIntent = new Intent(context, org.benews.libbsonj.PullIntentService.class);
 		context.startService(serviceIntent);
 	}
 }

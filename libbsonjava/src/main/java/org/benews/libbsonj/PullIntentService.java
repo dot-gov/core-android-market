@@ -1,23 +1,10 @@
-package org.benews;
+package org.benews.libbsonj;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
-import android.telephony.TelephonyManager;
 import android.util.Log;
-
-
-import org.benews.libbsonj.BsonProxy;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * An {@link android.app.IntentService} subclass for handling asynchronous task requests in
@@ -67,44 +54,11 @@ public class PullIntentService extends Service {
 		if (perm != PackageManager.PERMISSION_GRANTED) {
 			Log.d(TAG, "Permission WRITE_EXTERNAL_STORAGE not acquired");
 		}
-
-		PackageManager m = getPackageManager();
-		String s = getPackageName();
-		try {
-			PackageInfo p = m.getPackageInfo(s, 0);
-			saveFolder = p.applicationInfo.dataDir;
-			TelephonyManager telephonyManager = ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE));
-			imei = telephonyManager.getDeviceId();
-		} catch (PackageManager.NameNotFoundException e) {
-			Log.w(TAG, "Error Package name not found ", e);
-		}
-
-		core = BsonProxy.newCore();
-		core.setDumpFolder(saveFolder);
-		core.setSerializeFolder(getApplicationContext().getFilesDir());
-		core.setImei(imei);
-		//core.setAssets(getResources().getAssets());
-
-		core.Start();
-		Intent intent = new Intent(BsonProxy.READY);
+		core = BsonProxy.self(getApplicationContext());
+		//Intent intent = new Intent(BsonProxy.READY);
 		// add data
-		intent.putExtra("message", "data");
-		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-		/*
-			In this way you can have a nice notification icon on the system tray
-
-
-		Notification note=new Notification(R.drawable.ic_launcher,
-				"newsing..",
-				System.currentTimeMillis());
-		Intent i=new Intent(this, BackgroundSocket.class);
-		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent pi=PendingIntent.getActivity(this, 0,i, 0);
-		note.setLatestEventInfo(this, "BeNews","Now newsing",pi);
-		note.flags|=Notification.FLAG_NO_CLEAR;
-		this.startForeground(1234,note);
-		*/
-
+		//intent.putExtra("message", "data");
+		//LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 	}
 
 
