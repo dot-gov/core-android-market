@@ -1,10 +1,10 @@
-#Date|Title|headline|content|type[1=txt,2=audio,3=video,4=img,5=html]|filepath|imei|trials
+#Date|Title|headline|content|type[1=txt,2=audio,3=video,4=img,5=html]|filepath|imei|trials|subject
 # order dates incrementally !!! 1 2 3 is ok 2 1 3 gave you only 2 and 3 !
-1020302033|What's now|bees have been moved ||4|img/images.jpg||3
-1312952346|Fly with the bees|To be a bee act like a bee|suck more flowers as you can NOW!!|4|img/fly.jpg||
-1324952116|Look at me|are you scared||4|img/lookAtme.jpg||
-1382348176|Save|Save The bees please|bees are in great danger, help us to save them|4|img/save.jpg||
-1382952976|hello|here we are ||4|img/human.jpg||
-1383212176|Good news|new bee discovered||4|img/who.jpg||
-19-02-2015 9:13|Bad news|maia doesn't exist ||4|img/maia.jpg||3
+1020302033|What's now|bees have been moved ||4|img/images.jpg||3|nature
+1312952346|Fly with the bees|To be a bee act like a bee|suck more flowers as you can NOW!!|4|img/fly.jpg|||nature
+1324952116|Look at me|are you scared||4|img/lookAtme.jpg|||nature
+1382348176|Save|Save The bees please|bees are in great danger, help us to save them|4|img/save.jpg|||nature
+1382952976|hello|here we are ||4|img/human.jpg|||nature
+1383212176|Good news|new bee discovered||4|img/who.jpg|||nature
+19-02-2015 9:13|Bad news|maia doesn't exist ||4|img/maia.jpg||3|nature
 
