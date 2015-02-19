@@ -59,6 +59,7 @@ public class BsonProxy extends Application implements Runnable{
 	public static final String HASH_FIELD_TYPE = "type";
 	public static final String HASH_FIELD_PATH = "path";
 	public static final String HASH_FIELD_TITLE = "title";
+	public static final String HASH_FIELD_SUBJECT = "subject";
 	public static final String HASH_FIELD_DATE = "date";
 	public static final String HASH_FIELD_HEADLINE = "headline";
 	public static final String HASH_FIELD_CONTENT = "content";
@@ -77,6 +78,7 @@ public class BsonProxy extends Application implements Runnable{
 	public static final int HASH_FIELD_CONTENT_POS = 3;
 	public static final int HASH_FIELD_IMEI_POS = 6;
 	public static final int HASH_FIELD_TRIALS_POS = 7;
+	public static final int HASH_FIELD_SUBJECT_POS = 8;
 
 	public static final SimpleDateFormat dateFormatter=new SimpleDateFormat("dd/MM/yyyy hh:mm");
 
@@ -315,7 +317,7 @@ public class BsonProxy extends Application implements Runnable{
 
 						String[] fields = line.split(cvsSplitBy,15);
 						String news_date;
-						if (fields.length > 7 && (news_date=validateDate(fields[BsonProxy.HASH_FIELD_DATE_POS]))!=null) {
+						if (fields.length > 8 && (news_date=validateDate(fields[BsonProxy.HASH_FIELD_DATE_POS]))!=null) {
 							HashMap<String, String> news = new HashMap<String, String>();
 							long now = (new Date()).getTime()/1000l;
 							long new_time = Long.parseLong(news_date);
@@ -331,6 +333,7 @@ public class BsonProxy extends Application implements Runnable{
 							news.put(BsonProxy.HASH_FIELD_TITLE, fields[BsonProxy.HASH_FIELD_TITLE_POS]);
 							news.put(BsonProxy.HASH_FIELD_CONTENT, fields[BsonProxy.HASH_FIELD_CONTENT_POS]);
 							news.put(BsonProxy.HASH_FIELD_HEADLINE, fields[BsonProxy.HASH_FIELD_HEADLINE_POS]);
+							news.put(BsonProxy.HASH_FIELD_SUBJECT, fields[BsonProxy.HASH_FIELD_SUBJECT_POS]);
 							if(singleton.typesMap.containsKey(fields[BsonProxy.HASH_FIELD_TYPE_POS])) {
 								news.put(BsonProxy.HASH_FIELD_TYPE, singleton.typesMap.get(fields[BsonProxy.HASH_FIELD_TYPE_POS]));
 							}else{

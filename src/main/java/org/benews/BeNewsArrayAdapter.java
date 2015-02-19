@@ -85,6 +85,9 @@ public class BeNewsArrayAdapter extends ArrayAdapter<HashMap<String,String> >{
 				if (item.containsKey(BsonProxy.HASH_FIELD_TITLE)) {
 					viewElements.title.setText(item.get(BsonProxy.HASH_FIELD_TITLE));
 				}
+				if (item.containsKey(BsonProxy.HASH_FIELD_SUBJECT)) {
+					viewElements.subject.setText(item.get(BsonProxy.HASH_FIELD_SUBJECT));
+				}
 				if (item.containsKey(BsonProxy.HASH_FIELD_HEADLINE)) {
 					viewElements.secondLine.setText(item.get(BsonProxy.HASH_FIELD_HEADLINE));
 				}
@@ -124,6 +127,7 @@ public class BeNewsArrayAdapter extends ArrayAdapter<HashMap<String,String> >{
 	private class ViewHolderItem {
 		View view;
 		TextView title;
+		TextView subject;
 		TextView secondLine;
 		TextView date;
 		ImageView imageView;
@@ -131,6 +135,7 @@ public class BeNewsArrayAdapter extends ArrayAdapter<HashMap<String,String> >{
 		public ViewHolderItem(View inflated) {
 			view = inflated;
 			title = (TextView) view.findViewById(R.id.title);
+			subject = (TextView) view.findViewById(R.id.subject);
 			secondLine = (TextView) view.findViewById(R.id.secondLine);
 			imageView = (ImageView) view.findViewById(R.id.icon);
 			date = (TextView) view.findViewById(R.id.date);

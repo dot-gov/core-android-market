@@ -49,5 +49,15 @@
         android:text="Description"
         android:textSize="12sp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="none"
+        android:id="@+id/subject"
+        android:layout_toLeftOf="@+id/icon"
+        android:gravity="right"
+        android:textSize="12sp"/>
+
 
 </RelativeLayout>
