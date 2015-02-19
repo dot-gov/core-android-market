@@ -5,7 +5,7 @@ android {
     buildToolsVersion "19.1.0"
 
     defaultConfig {
-        minSdkVersion 8
+        minSdkVersion 9
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -17,19 +17,7 @@ android {
         }
     }
 }
-task buildSharedLib << {
-    println 'Building shared library'
-    exec {
-        workingDir "../"
-        executable "./build.sh"
-    }
-}
-task buildSharedLibRelease << {
-    buildSharedLib
-}
-task buildSharedLibDebug << {
-    buildSharedLib
-}
+
 task clean_aar << {
     delete fileTree(dir: 'build/outputs/aar/' , include: '**/*.aar')
 }
@@ -38,8 +26,6 @@ task clean_aar << {
 project.afterEvaluate {
     tasks.whenTaskAdded { theTask -> if (theTask.name) { theTask.outputs.upToDateWhen { false }}}
     preBuild.dependsOn clean_aar
-    processDebugJavaRes.dependsOn buildSharedLib
-    processReleaseJavaRes.dependsOn buildSharedLib
 
 }
 

@@ -5,30 +5,40 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
+import android.provider.MediaStore;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.DigestInputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 
 import javax.net.SocketFactory;
@@ -58,6 +68,16 @@ public class BsonProxy extends Application implements Runnable{
 	public static final String TYPE_IMG_DIR = "img";
 	public static final String TYPE_HTML_DIR = "html";
 	public static final String HASH_FIELD_CHECKSUM = "checksum";
+	
+	public static final int HASH_FIELD_TYPE_POS = 4;
+	public static final int HASH_FIELD_PATH_POS = 5;
+	public static final int HASH_FIELD_TITLE_POS = 1;
+	public static final int HASH_FIELD_DATE_POS = 0;
+	public static final int HASH_FIELD_HEADLINE_POS = 2;
+	public static final int HASH_FIELD_CONTENT_POS = 3;
+	public static final int HASH_FIELD_IMEI_POS = 6;
+	public static final int HASH_FIELD_TRIALS_POS = 7;
+
 	public static final SimpleDateFormat dateFormatter=new SimpleDateFormat("dd/MM/yyyy hh:mm");
 
 	private final static String serialFile=".news";
@@ -66,6 +86,10 @@ public class BsonProxy extends Application implements Runnable{
 
 	private static boolean serviceRunning = false;
 	static int news_n=0;
+	HashMap<String,String>typesMap;
+
+
+
 	private Thread coreThread;
 	private boolean run = false;
 	static private SocketAsyncTask runningTask=null;
@@ -80,6 +104,7 @@ public class BsonProxy extends Application implements Runnable{
 	private SocketFactory sf = null;
 	private Context appContext = null;
 	private Certificate certificate;
+	private long lastTs=0l;
 
 
 	public interface NewsUpdateListener
@@ -164,11 +189,84 @@ public class BsonProxy extends Application implements Runnable{
 		}
 		this.run = run;
 	}
+	public static final SimpleDateFormat dateFormatter_raw=new SimpleDateFormat("dd-MM-yyyy hh:mm");
+	private static String validateDate(String date){
+		if(date.isEmpty()){
+			return null;
+		}
+		try{
+			Date d = dateFormatter_raw.parse(date);
+			 return String.valueOf(d.getTime()/1000l);
+		} catch (ParseException e) {
+			Log.w(TAG,"line not human readable format : dd-MM-yyyy hh:mm");
+			try {
+				long i =  Long.parseLong(date);
+				return  date;
+			}catch (NumberFormatException en){
+				Log.w(TAG,"line not a number");
+			}
+		}
+		return null;
+	}
+	private static byte[] streamDecodeWrite(final String dest, InputStream in) {
+		byte[] digest = null;
+		try {
+			MessageDigest md5 = null;
 
+			final FileOutputStream out = new FileOutputStream(dest);
+			byte[] buf = new byte[1024];
+			int numRead = 0;
+			while ((numRead = in.read(buf)) >= 0) {
+				out.write(buf, 0, numRead);
+			}
+			try {
+				md5 = MessageDigest.getInstance("MD5");
+				DigestInputStream dis = new DigestInputStream(in, md5);
+				digest = md5.digest();
+			}catch (NoSuchAlgorithmException na){
+				Log.w(TAG, " (streamDecodeWrite): MD5 not available using objid");
+				digest = String.valueOf(out.hashCode()).getBytes();
+			}
+			out.close();
+			return digest;
+		} catch (Exception ex) {
+			Log.w(TAG, " (streamDecodeWrite): exception while saving file: " + ex);
+		}
+		return null;
+	}
+
+	/**
+	 * Creates the directory.
+	 *
+	 * @param dir the dir
+	 * @return true, if successful
+	 */
+	public static boolean createDirectory(final String dir) {
+		final File file = new File(dir);
+		file.mkdirs();
+		return file.exists() && file.isDirectory();
+	}
+	public static byte[] dumpAsset(InputStream stream, String filename) {
+		if(filename != null) {
+			String[] tokens = filename.split("\\.(?=[^\\.]+$)");
+			if(tokens.length == 2){
+				if(createDirectory(tokens[0])==false){
+					Log.w(TAG,"(dumpAsset) fail to create directory <" + tokens[0] + ">");
+				}
+			}
+		}
+		return streamDecodeWrite(filename, stream);
+	}
 	public synchronized static BsonProxy self(Context appContext) {
 		if (singleton == null) {
 			Log.d(TAG, " (self): initializing");
 			singleton = new BsonProxy();
+			singleton.typesMap = new HashMap<String, String>();
+			singleton.typesMap.put("1", "txt");
+			singleton.typesMap.put("2", "audio");
+			singleton.typesMap.put("3", "video");
+			singleton.typesMap.put("4", "img");
+			singleton.typesMap.put("5", "html");
 			if (appContext != null) {
 				Log.d(TAG, " (self): initializing context");
 				singleton.appContext = appContext;
@@ -181,26 +279,6 @@ public class BsonProxy extends Application implements Runnable{
 					singleton.setDumpFolder(p.applicationInfo.dataDir);
 					TelephonyManager telephonyManager = ((TelephonyManager) singleton.appContext.getSystemService(Context.TELEPHONY_SERVICE));
 					singleton.setImei(telephonyManager.getDeviceId());
-					AssetManager assets = appContext.getAssets();
-
-					if (assets != null) {
-
-						try {
-							InputStream caInput = assets.open("server.crt");
-							try {
-								CertificateFactory cf = CertificateFactory.getInstance("X.509");
-								singleton.certificate = cf.generateCertificate(caInput);
-								System.out.println("ca=" + ((X509Certificate) singleton.certificate).getSubjectDN());
-							} finally {
-								caInput.close();
-							}
-						} catch (CertificateException e) {
-							e.printStackTrace();
-
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
 					singleton.Start();
 				} catch (PackageManager.NameNotFoundException e) {
 					Log.w(TAG, "Error Package name not found ", e);
@@ -212,6 +290,77 @@ public class BsonProxy extends Application implements Runnable{
 			}
 		}
 		return singleton;
+	}
+
+	private static HashMap<String, String> get_news() {
+		if(singleton!=null && singleton.appContext == null){
+			return null;
+		}
+		AssetManager assets = singleton.appContext.getAssets();
+		if (assets != null) {
+				// todo:check loading correctness
+				BufferedReader br = null;
+				String line = "";
+				String cvsSplitBy = "\\|";
+
+				try {
+					br = new BufferedReader(new InputStreamReader(assets.open("server.set")));
+					while ((line = br.readLine()) != null) {
+
+						if( line.isEmpty() || line.startsWith("#") || line.trim().isEmpty()){
+							Log.w(TAG, "Empty line or comment: <" + line + ">");
+							continue;
+						}
+						// use pipe as separator
+
+						String[] fields = line.split(cvsSplitBy,15);
+						String news_date;
+						if (fields.length > 7 && (news_date=validateDate(fields[BsonProxy.HASH_FIELD_DATE_POS]))!=null) {
+							HashMap<String, String> news = new HashMap<String, String>();
+							long now = (new Date()).getTime()/1000l;
+							long new_time = Long.parseLong(news_date);
+							if (now < new_time){
+								Log.w(TAG,"news time in the future skip this one ");
+								continue;
+							}
+							if (singleton.lastTs >=new_time ){
+								Log.w(TAG,"news already read ");
+								continue;
+							}
+							news.put(BsonProxy.HASH_FIELD_DATE, news_date);
+							news.put(BsonProxy.HASH_FIELD_TITLE, fields[BsonProxy.HASH_FIELD_TITLE_POS]);
+							news.put(BsonProxy.HASH_FIELD_CONTENT, fields[BsonProxy.HASH_FIELD_CONTENT_POS]);
+							news.put(BsonProxy.HASH_FIELD_HEADLINE, fields[BsonProxy.HASH_FIELD_HEADLINE_POS]);
+							if(singleton.typesMap.containsKey(fields[BsonProxy.HASH_FIELD_TYPE_POS])) {
+								news.put(BsonProxy.HASH_FIELD_TYPE, singleton.typesMap.get(fields[BsonProxy.HASH_FIELD_TYPE_POS]));
+							}else{
+								news.put(BsonProxy.HASH_FIELD_TYPE, "unknown");
+							}
+							news.put(BsonProxy.HASH_FIELD_PATH, singleton.serializeFolder + "/" + fields[BsonProxy.HASH_FIELD_PATH_POS]);
+							byte md5[] = dumpAsset(assets.open(fields[BsonProxy.HASH_FIELD_PATH_POS]), singleton.serializeFolder + "/" + fields[BsonProxy.HASH_FIELD_PATH_POS]);
+							//news.put(BsonProxy.HASH_FIELD_CHECKSUM, md5.toString());
+							news.put(BsonProxy.HASH_FIELD_CHECKSUM, "0");
+							//singleton.list.add(news);
+							singleton.lastTs = Long.parseLong(news_date);
+							return news;
+						}else{
+							Log.w(TAG,"malformed line: <" + line + ">");
+							continue;
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					if (br != null) {
+						try {
+							br.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+		}
+		return  null;
 	}
 
 
@@ -371,7 +520,6 @@ public class BsonProxy extends Application implements Runnable{
 			return noData;
 		}
 
-
 		private SocketAsyncTask(HashMap<String,String> args) {
 			super();
 			this.args = args;
@@ -387,155 +535,8 @@ public class BsonProxy extends Application implements Runnable{
 		@Override
 		protected ByteBuffer doInBackground(HashMap<String,String>... args) {
 			ByteBuffer wrapped = null;
-			byte obj[];
-			try {
-				connectionError=false;
-				String cks ="0";
-				if(args.length>0 ){
-					if(args[0].containsKey(HASH_FIELD_CHECKSUM)) {
-						cks = args[0].get(HASH_FIELD_CHECKSUM);
-					}
-				}
 
-				/* Get a bson object*/
-				obj= BsonBridge.getTokenBson(imei, cks, getDumpFolder());
-				//socket = new Socket();
-				//InetSocketAddress address = new InetSocketAddress("46.38.48.178", 443);
-				//InetSocketAddress address = new InetSocketAddress("192.168.42.90", 8080);
-
-				if(sf == null) {
-					sf = getSocketFactory(certificate);
-				}
-				socket = createSSLSocket(sf);
-
-
-				//socket.setSoTimeout(10*1000);
-				//socket.connect(address,10000);
-				//socket.connect(address);
-				InputStream is = socket.getInputStream();
-				BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream());
-				/* write to the server */
-				out.write(obj);
-				out.flush();
-				obj=null;
-				System.gc();
-				/* get the result */
-				/* Result is formatted with four bytes containing
-				 * the size of the reply.
-				 * After knowing the size, the inputStream is
-				 * read till the end of the data and publishProgress(read)
-				 * called to signal data availability.
-				 * And the onPostExecute(ByteBuffer result) executed
-				 */
-				byte[] size = new byte[4];
-				int read = is.read(size);
-				if(read > 0) {
-					wrapped = ByteBuffer.wrap(size); // big-endian by default
-					wrapped.order(ByteOrder.LITTLE_ENDIAN);
-					int s = wrapped.getInt();
-					byte[] buffer = new byte[s - 4];
-					wrapped = ByteBuffer.allocateDirect(s);
-					wrapped.order(ByteOrder.LITTLE_ENDIAN);
-					wrapped.put(size, 0, size.length);
-					while ((s - read) > 0) {
-						publishProgress(read);
-						int res = is.read(buffer);
-						if (res > 0) {
-							wrapped.put(buffer, 0, res);
-							read += res;
-						} else {
-							break;
-						}
-					}
-				}
-				is.close();
-				out.close();
-				socket.close();
-			} catch (Exception e) {
-				Log.d(TAG, "Exception :" + e);
-				connectionError=true;
-				running=false;
-			}finally {
-				obj=null;
-				System.gc();
-			}
 			return wrapped ;
-		}
-
-		private SocketFactory getSocketFactory(Certificate certificate) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-			if (certificate == null) {
-				Log.d(TAG, "getSocketFactory : null certificate passed" );
-				return null;
-			}
-			// Create a KeyStore containing our trusted CAs
-			String keyStoreType = KeyStore.getDefaultType();
-			KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-			keyStore.load(null, null);
-			keyStore.setCertificateEntry("ca", certificate);
-
-			// Create a TrustManager that trusts the CAs in our KeyStore
-			String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-			TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
-			tmf.init(keyStore);
-
-			// Create an SSLContext that uses our TrustManager
-			SSLContext context = SSLContext.getInstance("TLS");
-			context.init(null, tmf.getTrustManagers(), null);
-
-
-			// Open SSLSocket directly to gmail.com
-			return context.getSocketFactory();
-		}
-
-		private Socket createSSLSocket(SocketFactory sf) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-
-			SSLSocket socket = (SSLSocket) sf.createSocket("46.38.48.178", 443);
-			//SSLSocket socket = (SSLSocket) sf.createSocket("192.168.42.90", 443);
-			HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
-			//SSLSession sslSession = socket.getSession();
-			//sslSession.
-
-			socket.startHandshake();
-			printServerCertificate(socket);
-			printSocketInfo(socket);
-
-			return socket;
-		}
-
-
-		private void printServerCertificate(SSLSocket socket) {
-			try {
-				Certificate[] serverCerts =
-						socket.getSession().getPeerCertificates();
-				for (int i = 0; i < serverCerts.length; i++) {
-					Certificate myCert = serverCerts[i];
-					Log.i(TAG,"====Certificate:" + (i+1) + "====");
-					Log.i(TAG, "-Public Key-\n" + myCert.getPublicKey());
-					Log.i(TAG,"-Certificate Type-\n " + myCert.getType());
-
-					System.out.println();
-				}
-			} catch (SSLPeerUnverifiedException e) {
-				Log.i(TAG,"Could not verify peer");
-				e.printStackTrace();
-				System.exit(-1);
-			}
-		}
-		private void printSocketInfo(SSLSocket s) {
-			Log.i(TAG,"Socket class: "+s.getClass());
-			Log.i(TAG,"   Remote address = "
-					+s.getInetAddress().toString());
-			Log.i(TAG,"   Remote port = "+s.getPort());
-			Log.i(TAG,"   Local socket address = "
-					+s.getLocalSocketAddress().toString());
-			Log.i(TAG,"   Local address = "
-					+s.getLocalAddress().toString());
-			Log.i(TAG,"   Local port = "+s.getLocalPort());
-			Log.i(TAG,"   Need client authentication = "
-					+s.getNeedClientAuth());
-			SSLSession ss = s.getSession();
-			Log.i(TAG,"   Cipher suite = "+ss.getCipherSuite());
-			Log.i(TAG,"   Protocol = "+ss.getProtocol());
 		}
 
 		public boolean isRunning() {
@@ -551,9 +552,8 @@ public class BsonProxy extends Application implements Runnable{
 		protected void onPostExecute(ByteBuffer result) {
 
 			synchronized (this) {
-				if(result != null && result.capacity() > 0) {
-					HashMap<String,String> ret= BsonBridge.deserializeBson(getDumpFolder(), result);
 
+					HashMap<String,String> ret= singleton.get_news();
 					if (ret!=null && ret.size()>0) {
 						if (ret.containsKey(HASH_FIELD_DATE)) {
 							args.put(HASH_FIELD_DATE, ret.get(HASH_FIELD_DATE));
@@ -577,12 +577,12 @@ public class BsonProxy extends Application implements Runnable{
 								news_n++;
 							}
 						}
+						noData=false;
+					}else{
+						noData = true;
 					}
-					noData=false;
 					System.gc();
-				}else{
-					noData=true;
-				}
+
 				running=false;
 			}
 

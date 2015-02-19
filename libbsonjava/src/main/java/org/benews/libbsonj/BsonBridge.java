@@ -17,12 +17,7 @@ import java.util.HashMap;
  * 6) it can be copied in src/libbson/include/bsonBridge.h
  * */
 public class BsonBridge {
-	static {
-		System.loadLibrary("bson");
-	}
-	/*	public class ReceivedSnap{
-		};
-	*/
+
 	public static final String TAG = "BsonBridge";
 	public static final int BSON_TYPE_TEXT = 0;
 
@@ -33,11 +28,10 @@ public class BsonBridge {
 
 	public static HashMap<String,String> deserializeBson(String baseDir, ByteBuffer payload){
 		Log.d(TAG, "serialize called\n");
-		return deserialize(baseDir, payload);
+		return null;
 	}
 	public static  byte[] getTokenBson (String imei, String cks,String baseDir){
 		Log.d(TAG,"getToken called\n");
-		return getToken(imei,cks,baseDir);
-
+		return null;
 	}
 }
