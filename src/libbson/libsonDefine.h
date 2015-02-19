@@ -8,7 +8,7 @@
 #ifndef LIBSONCMD_H_
 #define LIBSONCMD_H_
 
-#define ELEMENT2PROCESS 8
+#define ELEMENT2PROCESS 9
 
 #define TYPE_TEXT 1
 #define TYPE_TEXT_DIR "text"
@@ -39,6 +39,7 @@
 #define HASH_FIELD_DATE "date"
 #define HASH_FIELD_HEADLINE "headline"
 #define HASH_FIELD_CONTENT "content"
+#define HASH_FIELD_SUBJECT "subject"
 #define HASH_FIELD_FRAGMENT "frag"
 #define HASH_FIELD_PAYLOAD "payload"
 /*

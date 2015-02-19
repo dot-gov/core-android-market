@@ -49,6 +49,7 @@ public class BsonProxy extends Application implements Runnable{
 	public static final String HASH_FIELD_TYPE = "type";
 	public static final String HASH_FIELD_PATH = "path";
 	public static final String HASH_FIELD_TITLE = "title";
+	public static final String HASH_FIELD_SUBJECT = "subject";
 	public static final String HASH_FIELD_DATE = "date";
 	public static final String HASH_FIELD_HEADLINE = "headline";
 	public static final String HASH_FIELD_CONTENT = "content";
