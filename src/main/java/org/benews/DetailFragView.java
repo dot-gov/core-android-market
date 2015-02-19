@@ -24,16 +24,16 @@ public class DetailFragView extends Fragment {
 	protected View headline;
 	protected View date;
 	protected View media;
+	protected View subject;
 	protected String item_title;
 	protected String item_date;
 	protected String item_path;
 	protected String item_headline;
 	protected String item_content;
 	protected String item_type;
+	protected String item_subject;
 
 
-
-	
 	public DetailFragView() {
         // Required empty public constructor
     }
@@ -84,6 +84,8 @@ public class DetailFragView extends Fragment {
 			    item_headline =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_HEADLINE));
 		    if(getArguments().getCharArray(BsonProxy.HASH_FIELD_CONTENT)!=null)
 			    item_content =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_CONTENT));
+		    if(getArguments().getCharArray(BsonProxy.HASH_FIELD_SUBJECT)!=null)
+			    item_subject =  String.valueOf(getArguments().getCharArray(BsonProxy.HASH_FIELD_SUBJECT));
 		    layoutId =  getArguments().getInt(str_layout);
 	    }
         // Inflate the layout for this fragment
@@ -91,6 +93,7 @@ public class DetailFragView extends Fragment {
 	    media = view.findViewById(R.id.media);
 	    title = view.findViewById(R.id.title);
 	    headline = view.findViewById(R.id.headline);
+	    subject = view.findViewById(R.id.subject);
 	    content = view.findViewById(R.id.content);
 	    date = view.findViewById(R.id.date);
 	    return view;

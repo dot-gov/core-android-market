@@ -46,6 +46,9 @@ public class DetailFragViewImage extends DetailFragView {
 			if (item_title != null && title != null) {
 				((TextView) title).setText(item_title);
 			}
+			if (item_subject != null && subject != null) {
+				((TextView) subject).setText(item_subject);
+			}
 			if (item_headline != null && headline != null) {
 				((TextView) headline).setText(item_headline);
 			}

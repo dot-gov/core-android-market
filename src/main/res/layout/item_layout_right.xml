@@ -6,7 +6,7 @@
     android:padding="6dp" >
     <TextView
         android:id="@+id/date"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="left"
         android:layout_gravity="left"
@@ -51,6 +51,16 @@
         android:textSize="12sp"
         />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="none"
+        android:id="@+id/subject"
+        android:layout_alignParentRight="true"
+        android:singleLine="true"
+        android:textSize="12sp"
+        android:gravity="right"/>
 
 
 </RelativeLayout>

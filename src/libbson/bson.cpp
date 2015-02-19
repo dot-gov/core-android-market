@@ -938,7 +938,7 @@ return ret;
  * returns: 0 in case of success
  */
 
-jobject save_payload_type(string baseDir, int type, long int ts, int fragment, string title, string headline, string content, char* payload, int payload_size, string sha1_str, JNIEnv *env)
+jobject save_payload_type(string baseDir, int type, long int ts, int fragment, string title,string subject, string headline, string content, char* payload, int payload_size, string sha1_str, JNIEnv *env)
 {
 jobject hashMap = NULL;
 string result_output;
@@ -993,6 +993,7 @@ if (payload != NULL && !baseDir.empty() && payload_size > 0) {
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_TYPE), env->NewStringUTF(getTypeDir(type).c_str()));
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_PATH), env->NewStringUTF(result_output.c_str()));
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_TITLE), env->NewStringUTF(title.c_str()));
+               env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_SUBJECT), env->NewStringUTF(subject.c_str()));
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_DATE), env->NewStringUTF(ts_string.c_str()));
                save_timestamp(ts);
                env->CallObjectMethod(hashMap, put, env->NewStringUTF(HASH_FIELD_HEADLINE), env->NewStringUTF(headline.c_str()));
@@ -1102,7 +1103,7 @@ if (bson_s != NULL) {
       be *ptr;
       string res;
       int element = 0;
-      string value, title_str, headline_str, content_str, sha1_str;
+      string value, title_str, headline_str, content_str, sha1_str,subject_str;
       be ts = y.getField(HASH_FIELD_TIMESTAMP);
       logd("got elemets");
       if (ts.size() > 0 && ts.type() == NumberLong) {
@@ -1149,6 +1150,16 @@ if (bson_s != NULL) {
          logd("got title %s", title_str.c_str());
          element++;
       }
+      be subject = y.getField(HASH_FIELD_SUBJECT);
+      if (subject.size() > 0 && subject.type() == BinData) {
+         int a;
+         ptr = &subject;
+         subject_str = boost::lexical_cast<std::string>(ptr->binData(a));
+         subject_str = subject_str.substr(0, a);
+         res += boost::lexical_cast<std::string>(ptr->fieldName()) + "=" + subject_str + "\n";
+         logd("got subject %s", subject_str.c_str());
+         element++;
+      }
       be headline = y.getField(HASH_FIELD_HEADLINE);
       if (headline.size() > 0 && headline.type() == BinData) {
          ptr = &headline;
@@ -1187,7 +1198,7 @@ if (bson_s != NULL) {
          logd("returning %s", res.c_str());
          int a;
          const char *payloadArray = payload.binData(a);
-         resS = save_payload_type(basedir_str, type.Int(), ts.Long(), frag.Int(), title_str, headline_str, content_str, (char *) payloadArray, a, sha1_str, env);
+         resS = save_payload_type(basedir_str, type.Int(), ts.Long(), frag.Int(), title_str, subject_str,headline_str, content_str, (char *) payloadArray, a, sha1_str, env);
       }
    } else {
       // env->ReleaseByteArrayElements(bson_s,arry, JNI_ABORT);
