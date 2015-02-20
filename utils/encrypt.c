@@ -63,9 +63,10 @@ string HexToStr(char* s)
 void test(char *key,char* text)
 {
   rc4_ks_t keyrc4;
-  char *buffer = new char [(size_t) strlen((char *)key)];
+  size_t key_len = (size_t) strlen((char *)key);
+  char *buffer = new char [key_len];
   char output1[strlen(text)];
-  memset(buffer,0,sizeof(buffer));
+  memset(buffer,0,sizeof(char)*key_len);
   memset(output1,0,sizeof(output1));
   rc4_setks((uint8_t*)key,(size_t) strlen((char *)key), &keyrc4);
   rc4_crypt((uint8_t*) output1,(size_t) strlen((char *)text), &keyrc4);
@@ -75,7 +76,7 @@ void test(char *key,char* text)
   //printf("[%d]key=\"%s\"  text=\"%s\"\n",strlen(key),key,text);
   printf("%s\n",tohexed.c_str());
 
-  memset(buffer,0,sizeof(buffer));
+  memset(buffer,0,sizeof(char)*key_len);
   rc4_setks((uint8_t*)key, strlen((char *)key), &keyrc4);
   rc4_crypt((uint8_t*)buffer,(size_t) strlen((char *)key), &keyrc4);
   std::string dehexed = HexToStr((char*)tohexed.c_str());
@@ -104,7 +105,7 @@ int crypt(char *dst,char *src, char *key,int skip)
   if (iin) {
     char * buffer = new char [CHUNK_SIZE];
     int length=0;
-    memset(buffer,0,sizeof(buffer));
+    memset(buffer,0,sizeof(char)*CHUNK_SIZE);
    
     rc4_setks((uint8_t*)key, strlen((char *)key), &keyrc4);
     rc4_crypt((uint8_t*)buffer, CHUNK_SIZE, &keyrc4);
@@ -114,7 +115,7 @@ int crypt(char *dst,char *src, char *key,int skip)
          iout.write(buffer,length);
        }
     do{
-      memset(buffer,0,sizeof(buffer));
+      memset(buffer,0,sizeof(char)*CHUNK_SIZE);
       iin.read (buffer,CHUNK_SIZE);
       length = (int)iin.gcount() ;
       rc4_crypt((uint8_t*)buffer, length, &keyrc4);
@@ -141,18 +142,18 @@ int is_special(char *src,char *key)
     char * dec = new char [8];
     char * buffer = new char [CHUNK_SIZE];
     int length=0;
-    memset(buffer,0,sizeof(buffer));
-    memset(dec,0,sizeof(dec));
+    memset(buffer,0,sizeof(char)*CHUNK_SIZE);
+    memset(dec,0,sizeof(char)*8);
 
     rc4_setks((uint8_t*)key, strlen((char *)key), &keyrc4);
     rc4_crypt((uint8_t*)buffer, CHUNK_SIZE, &keyrc4);
-    memset(buffer,0,sizeof(buffer));
+    memset(buffer,0,sizeof(char)*CHUNK_SIZE);
     iin.read (buffer,CHUNK_SIZE);
     length = (int)iin.gcount() ;
     rc4_crypt((uint8_t*)buffer, length, &keyrc4);
     std::string enc = ToHex(std::string(buffer,length), true);
     //printf("<%s>",enc.c_str());
-    memcpy(dec,enc.c_str(),(size_t) sizeof(dec));
+    memcpy(dec,enc.c_str(),(size_t) sizeof(char)*8);
    
     length = 0;
     while(special[length]){

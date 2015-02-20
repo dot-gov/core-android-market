@@ -56,7 +56,7 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
 			int groupsize, char *linebuf, size_t linebuflen,
 			int ascii)
 {
-	const uint8_t *ptr = buf;
+	const uint8_t *ptr = (uint8_t *)buf;
 	uint8_t ch;
 	int j, lx = 0;
 	int ascii_column;
@@ -73,7 +73,7 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
 
 	switch (groupsize) {
 	case 8: {
-		const uint64_t *ptr8 = buf;
+		const uint64_t *ptr8 = (uint64_t *)buf;
 		int ngroups = len / groupsize;
 
 		for (j = 0; j < ngroups; j++)
@@ -85,7 +85,7 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
 	}
 
 	case 4: {
-		const uint32_t *ptr4 = buf;
+		const uint32_t *ptr4 = (uint32_t *)buf;
 		int ngroups = len / groupsize;
 
 		for (j = 0; j < ngroups; j++)
@@ -96,7 +96,7 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
 	}
 
 	case 2: {
-		const uint16_t *ptr2 = buf;
+		const uint16_t *ptr2 = (uint16_t *)buf;
 		int ngroups = len / groupsize;
 
 		for (j = 0; j < ngroups; j++)
@@ -136,7 +136,7 @@ void print_hex_dump(const char *prefix_str, int prefix_type,
 		    int rowsize, int groupsize,
 		    const void *buf, size_t len, int ascii)
 {
-	const uint8_t *ptr = buf;
+	const uint8_t *ptr = (uint8_t *)buf;
 	int i, linelen, remaining = len;
 	unsigned char linebuf[32 * 3 + 2 + 32 + 1];
 
