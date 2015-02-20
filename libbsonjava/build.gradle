@@ -32,6 +32,7 @@ task buildSharedLibDebug << {
 }
 task clean_aar << {
     delete fileTree(dir: 'build/outputs/aar/' , include: '**/*.aar')
+    delete ('src/main/jniLibs' )
 }
 
 
