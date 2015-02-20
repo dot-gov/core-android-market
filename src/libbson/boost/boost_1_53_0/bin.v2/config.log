@@ -1,0 +1,193 @@
+...found 9 targets...
+...updating 7 targets...
+common.mkdir bin.v2
+common.mkdir bin.v2/libs
+common.mkdir bin.v2/libs/context
+common.mkdir bin.v2/libs/context/config
+common.mkdir bin.v2/libs/context/config/gcc-androidR8e
+common.mkdir bin.v2/libs/context/config/gcc-androidR8e/debug
+gcc.compile.c++ bin.v2/libs/context/config/gcc-androidR8e/debug/32.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+1 warning generated.
+...updated 7 targets...
+...found 3 targets...
+...updating 1 target...
+gcc.compile.c++ bin.v2/libs/context/config/gcc-androidR8e/debug/x86.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+/home/zad/work/devel/libbsonjava-full/src/libbson/boost/boost_1_53_0/libs/context/config/x86.cpp:15:2: error: "Not x86"
+#error "Not x86"
+ ^
+1 warning and 1 error generated.
+
+    "/home/zad/bin/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-g++"  -ftemplate-depth-128 -D__arm__ -D_REENTRANT -D_GLIBCXX__PTHREADS -O0 -fno-inline -Wall -g -fexceptions -frtti -fpic -ffunction-sections -funwind-tables -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -Wno-psabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -I/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include -Wa,--noexecstack -DANDROID -D__ANDROID__ -DNDEBUG -O2 -g -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi/include -fvisibility=hidden -fvisibility-inlines-hidden -fdata-sections -fPIC  -DBOOST_ALL_NO_LIB=1  -I"." -c -o "bin.v2/libs/context/config/gcc-androidR8e/debug/x86.o" "/home/zad/work/devel/libbsonjava-full/src/libbson/boost/boost_1_53_0/libs/context/config/x86.cpp"
+
+...failed gcc.compile.c++ bin.v2/libs/context/config/gcc-androidR8e/debug/x86.o...
+...failed updating 1 target...
+...found 3 targets...
+...updating 1 target...
+gcc.compile.c++ bin.v2/libs/context/config/gcc-androidR8e/debug/power.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+/home/zad/work/devel/libbsonjava-full/src/libbson/boost/boost_1_53_0/libs/context/config/power.cpp:13:2: error: "Not PPC"
+#error "Not PPC"
+ ^
+1 warning and 1 error generated.
+
+    "/home/zad/bin/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-g++"  -ftemplate-depth-128 -D__arm__ -D_REENTRANT -D_GLIBCXX__PTHREADS -O0 -fno-inline -Wall -g -fexceptions -frtti -fpic -ffunction-sections -funwind-tables -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -Wno-psabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -I/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include -Wa,--noexecstack -DANDROID -D__ANDROID__ -DNDEBUG -O2 -g -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi/include -fvisibility=hidden -fvisibility-inlines-hidden -fdata-sections -fPIC  -DBOOST_ALL_NO_LIB=1  -I"." -c -o "bin.v2/libs/context/config/gcc-androidR8e/debug/power.o" "/home/zad/work/devel/libbsonjava-full/src/libbson/boost/boost_1_53_0/libs/context/config/power.cpp"
+
+...failed gcc.compile.c++ bin.v2/libs/context/config/gcc-androidR8e/debug/power.o...
+...failed updating 1 target...
+...found 3 targets...
+...updating 1 target...
+gcc.compile.c++ bin.v2/libs/context/config/gcc-androidR8e/debug/arm.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+1 warning generated.
+...updated 1 target...
+...found 12 targets...
+...updating 6 targets...
+common.mkdir bin.v2/libs/regex
+common.mkdir bin.v2/libs/regex/build
+common.mkdir bin.v2/libs/regex/build/gcc-androidR8e
+common.mkdir bin.v2/libs/regex/build/gcc-androidR8e/debug
+gcc.compile.c++ bin.v2/libs/regex/build/gcc-androidR8e/debug/has_icu_test.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+libs/regex/build/has_icu_test.cpp:12:10: fatal error: 'unicode/uversion.h' file not found
+#include <unicode/uversion.h>
+         ^
+1 warning and 1 error generated.
+
+    "/home/zad/bin/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-g++"  -ftemplate-depth-128 -D__arm__ -D_REENTRANT -D_GLIBCXX__PTHREADS -O0 -fno-inline -Wall -pedantic -g -fexceptions -frtti -fpic -ffunction-sections -funwind-tables -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -Wno-psabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -I/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include -Wa,--noexecstack -DANDROID -D__ANDROID__ -DNDEBUG -O2 -g -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi/include -fvisibility=hidden -fvisibility-inlines-hidden -fdata-sections -fPIC  -DBOOST_ALL_NO_LIB=1 -DBOOST_HAS_ICU=1  -I"." -c -o "bin.v2/libs/regex/build/gcc-androidR8e/debug/has_icu_test.o" "libs/regex/build/has_icu_test.cpp"
+
+...failed gcc.compile.c++ bin.v2/libs/regex/build/gcc-androidR8e/debug/has_icu_test.o...
+...skipped <pbin.v2/libs/regex/build/gcc-androidR8e/debug>has_icu for lack of <pbin.v2/libs/regex/build/gcc-androidR8e/debug>has_icu_test.o...
+...failed updating 1 target...
+...skipped 1 target...
+...updated 4 targets...
+...found 9 targets...
+...updating 6 targets...
+common.mkdir bin.v2/libs/locale
+common.mkdir bin.v2/libs/locale/build
+common.mkdir bin.v2/libs/locale/build/gcc-androidR8e
+common.mkdir bin.v2/libs/locale/build/gcc-androidR8e/debug
+gcc.compile.c++ bin.v2/libs/locale/build/gcc-androidR8e/debug/has_iconv_libc_obj.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+In file included from libs/locale/src/../build/has_iconv.cpp:8:
+/usr/include/iconv.h:26:1: error: unknown type name '__BEGIN_DECLS'
+__BEGIN_DECLS
+^
+/usr/include/iconv.h:29:1: error: expected unqualified-id
+typedef void *iconv_t;
+^
+/usr/include/iconv.h:37:8: error: unknown type name 'iconv_t'
+extern iconv_t iconv_open (const char *__tocode, const char *__fromcode);
+       ^
+/usr/include/iconv.h:42:22: error: unknown type name 'iconv_t'
+extern size_t iconv (iconv_t __cd, char **__restrict __inbuf,
+                     ^
+/usr/include/iconv.h:51:25: error: unknown type name 'iconv_t'
+extern int iconv_close (iconv_t __cd);
+                        ^
+/usr/include/iconv.h:53:1: error: unknown type name '__END_DECLS'
+__END_DECLS
+^
+libs/locale/src/../build/has_iconv.cpp:10:1: error: expected unqualified-id
+int main()
+^
+1 warning and 7 errors generated.
+
+    "/home/zad/bin/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-g++"  -ftemplate-depth-128 -D__arm__ -D_REENTRANT -D_GLIBCXX__PTHREADS -O0 -fno-inline -Wall -g -fexceptions -frtti -fpic -ffunction-sections -funwind-tables -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -Wno-psabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -I/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include -Wa,--noexecstack -DANDROID -D__ANDROID__ -DNDEBUG -O2 -g -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi/include -fvisibility=hidden -fvisibility-inlines-hidden -fdata-sections -fPIC  -DBOOST_ALL_NO_LIB=1  -I"." -c -o "bin.v2/libs/locale/build/gcc-androidR8e/debug/has_iconv_libc_obj.o" "libs/locale/src/../build/has_iconv.cpp"
+
+...failed gcc.compile.c++ bin.v2/libs/locale/build/gcc-androidR8e/debug/has_iconv_libc_obj.o...
+...skipped <pbin.v2/libs/locale/build/gcc-androidR8e/debug>has_iconv for lack of <pbin.v2/libs/locale/build/gcc-androidR8e/debug>has_iconv_libc_obj.o...
+...failed updating 1 target...
+...skipped 1 target...
+...updated 4 targets...
+...found 2 targets...
+...updating 2 targets...
+gcc.compile.c++ bin.v2/libs/locale/build/gcc-androidR8e/debug/has_iconv_libc_ext.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+In file included from libs/locale/src/../build/has_iconv.cpp:8:
+/usr/include/iconv.h:26:1: error: unknown type name '__BEGIN_DECLS'
+__BEGIN_DECLS
+^
+/usr/include/iconv.h:29:1: error: expected unqualified-id
+typedef void *iconv_t;
+^
+/usr/include/iconv.h:37:8: error: unknown type name 'iconv_t'
+extern iconv_t iconv_open (const char *__tocode, const char *__fromcode);
+       ^
+/usr/include/iconv.h:42:22: error: unknown type name 'iconv_t'
+extern size_t iconv (iconv_t __cd, char **__restrict __inbuf,
+                     ^
+/usr/include/iconv.h:51:25: error: unknown type name 'iconv_t'
+extern int iconv_close (iconv_t __cd);
+                        ^
+/usr/include/iconv.h:53:1: error: unknown type name '__END_DECLS'
+__END_DECLS
+^
+libs/locale/src/../build/has_iconv.cpp:10:1: error: expected unqualified-id
+int main()
+^
+1 warning and 7 errors generated.
+
+    "/home/zad/bin/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-g++"  -ftemplate-depth-128 -D__arm__ -D_REENTRANT -D_GLIBCXX__PTHREADS -O0 -fno-inline -Wall -g -fexceptions -frtti -fpic -ffunction-sections -funwind-tables -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -Wno-psabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -I/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include -Wa,--noexecstack -DANDROID -D__ANDROID__ -DNDEBUG -O2 -g -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi/include -fvisibility=hidden -fvisibility-inlines-hidden -fdata-sections -fPIC  -DBOOST_ALL_NO_LIB=1  -I"." -c -o "bin.v2/libs/locale/build/gcc-androidR8e/debug/has_iconv_libc_ext.o" "libs/locale/src/../build/has_iconv.cpp"
+
+...failed gcc.compile.c++ bin.v2/libs/locale/build/gcc-androidR8e/debug/has_iconv_libc_ext.o...
+...skipped <pbin.v2/libs/locale/build/gcc-androidR8e/debug>has_external_iconv for lack of <pbin.v2/libs/locale/build/gcc-androidR8e/debug>has_iconv_libc_ext.o...
+...failed updating 1 target...
+...skipped 1 target...
+...found 5 targets...
+...updating 2 targets...
+gcc.compile.c++ bin.v2/libs/locale/build/gcc-androidR8e/debug/has_icu_obj.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+libs/locale/src/../build/has_icu_test.cpp:12:10: fatal error: 'unicode/uversion.h' file not found
+#include <unicode/uversion.h>
+         ^
+1 warning and 1 error generated.
+
+    "/home/zad/bin/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-g++"  -ftemplate-depth-128 -D__arm__ -D_REENTRANT -D_GLIBCXX__PTHREADS -O0 -fno-inline -Wall -g -fexceptions -frtti -fpic -ffunction-sections -funwind-tables -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -Wno-psabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -I/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include -Wa,--noexecstack -DANDROID -D__ANDROID__ -DNDEBUG -O2 -g -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi/include -fvisibility=hidden -fvisibility-inlines-hidden -fdata-sections -fPIC  -DBOOST_ALL_NO_LIB=1  -I"." -c -o "bin.v2/libs/locale/build/gcc-androidR8e/debug/has_icu_obj.o" "libs/locale/src/../build/has_icu_test.cpp"
+
+...failed gcc.compile.c++ bin.v2/libs/locale/build/gcc-androidR8e/debug/has_icu_obj.o...
+...skipped <pbin.v2/libs/locale/build/gcc-androidR8e/debug>has_icu for lack of <pbin.v2/libs/locale/build/gcc-androidR8e/debug>has_icu_obj.o...
+...failed updating 1 target...
+...skipped 1 target...
+...found 2 targets...
+...updating 2 targets...
+gcc.compile.c++ bin.v2/libs/locale/build/gcc-androidR8e/debug/has_icu64_obj.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+libs/locale/src/../build/has_icu_test.cpp:12:10: fatal error: 'unicode/uversion.h' file not found
+#include <unicode/uversion.h>
+         ^
+1 warning and 1 error generated.
+
+    "/home/zad/bin/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-g++"  -ftemplate-depth-128 -D__arm__ -D_REENTRANT -D_GLIBCXX__PTHREADS -O0 -fno-inline -Wall -g -fexceptions -frtti -fpic -ffunction-sections -funwind-tables -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -Wno-psabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -I/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include -Wa,--noexecstack -DANDROID -D__ANDROID__ -DNDEBUG -O2 -g -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi/include -fvisibility=hidden -fvisibility-inlines-hidden -fdata-sections -fPIC  -DBOOST_ALL_NO_LIB=1  -I"." -c -o "bin.v2/libs/locale/build/gcc-androidR8e/debug/has_icu64_obj.o" "libs/locale/src/../build/has_icu_test.cpp"
+
+...failed gcc.compile.c++ bin.v2/libs/locale/build/gcc-androidR8e/debug/has_icu64_obj.o...
+...skipped <pbin.v2/libs/locale/build/gcc-androidR8e/debug>has_icu64 for lack of <pbin.v2/libs/locale/build/gcc-androidR8e/debug>has_icu64_obj.o...
+...failed updating 1 target...
+...skipped 1 target...
+...found 7 targets...
+...updating 5 targets...
+common.mkdir bin.v2/libs/math
+common.mkdir bin.v2/libs/math/config
+common.mkdir bin.v2/libs/math/config/gcc-androidR8e
+common.mkdir bin.v2/libs/math/config/gcc-androidR8e/debug
+gcc.compile.c++ bin.v2/libs/math/config/gcc-androidR8e/debug/has_gcc_visibility.o
+error: unknown warning option '-Wno-psabi' [-Werror,-Wunknown-warning-option]
+
+    "/home/zad/bin/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-g++"  -ftemplate-depth-128 -D__arm__ -D_REENTRANT -D_GLIBCXX__PTHREADS -O0 -fno-inline -Wall -g -fexceptions -frtti -fpic -ffunction-sections -funwind-tables -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -Wno-psabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -I/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include -Wa,--noexecstack -DANDROID -D__ANDROID__ -DNDEBUG -O2 -g -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include -I/home/zad/bin/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi/include -fvisibility=hidden -fvisibility-inlines-hidden -fdata-sections -fPIC -Werror -fvisibility=hidden -DBOOST_ALL_NO_LIB=1  -I"." -c -o "bin.v2/libs/math/config/gcc-androidR8e/debug/has_gcc_visibility.o" "libs/math/config/has_gcc_visibility.cpp"
+
+...failed gcc.compile.c++ bin.v2/libs/math/config/gcc-androidR8e/debug/has_gcc_visibility.o...
+...failed updating 1 target...
+...updated 4 targets...
+...found 47 targets...
+...updating 1 target...
+gcc.compile.c++ bin.v2/libs/math/config/gcc-androidR8e/debug/has_long_double_support.o
+warning: unknown warning option '-Wno-psabi' [-Wunknown-warning-option]
+In file included from libs/math/config/has_long_double_support.cpp:6:
+In file included from ./boost/math/tools/config.hpp:281:
+In file included from ./boost/detail/fenv.hpp:69:
+/home/zad/bin/android-ndk-r9d/platforms/android-9/arch-arm/usr/include/fenv.h:111:10: warning: explicitly assigning a variable of type 'fenv_t' (aka 'unsigned int') to itself [-Wself-assign]
+  _fpscr = _fpscr;
+  ~~~~~~ ^ ~~~~~~
+2 warnings generated.
+...updated 1 target...

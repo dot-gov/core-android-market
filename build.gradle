@@ -41,3 +41,6 @@ dependencies {
     compile 'com.android.support:support-v4:20.0.0'
     compile project(':libbsonjava')
 }
+// in case of error building the libson.so:
+//make: *** [/home/zad/work/devel/libbsonjava-full/obj/local/armeabi/objs/bson/__/src/libbson/preprocessed/bson.o] Error 1
+// cd in src/libson/boost and call ./build-android.sh
