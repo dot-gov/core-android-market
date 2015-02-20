@@ -37,10 +37,7 @@ android {
 tasks.whenTaskAdded { theTask -> if (theTask.name) { theTask.outputs.upToDateWhen { false }}}
 
 dependencies {
-
     compile 'com.android.support:appcompat-v7:20.0.0'
     compile 'com.android.support:support-v4:20.0.0'
-    compile 'org.benews.libbsonj:libbsonjava:0.0.1'
-
-
+    compile project(':libbsonjava')
 }
