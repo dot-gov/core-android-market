@@ -17,6 +17,21 @@ android {
         }
     }
 }
+task buildutils << {
+    println 'Building utils clean'
+    exec {
+        workingDir "../utils"
+        executable "make"
+        args "clean"
+    }
+    println 'Building utils clean'
+
+    exec {
+        workingDir "../utils"
+        executable "make"
+    }
+}
+
 task buildSharedLib << {
     println 'Building shared library'
     exec {
@@ -33,14 +48,48 @@ task buildSharedLibDebug << {
 task clean_aar << {
     delete fileTree(dir: 'build/outputs/aar/' , include: '**/*.aar')
     delete ('src/main/jniLibs' )
+
 }
 
+
+task copy_aar_debug(type: Copy) {
+    delete ('aar-debug' )
+
+    exec {
+        executable "mkdir"
+        args "aar-debug"
+    }
+    from('build/outputs/aar') {
+        rename '(libbsonjava)-debug.aar', '$1-0.0.1.aar'
+        exclude '**/*-release.*'
+    }
+
+    into 'aar-debug'
+}
+
+task copy_aar_release(type: Copy) {
+    delete ('aar-release' )
+
+    exec {
+        executable "mkdir"
+        args "aar-release"
+    }
+    from('build/outputs/aar') {
+        rename '(libbsonjava)-release.aar', '$1-0.0.1.aar'
+        exclude '**/*-debug.*'
+    }
+
+    into 'aar-release'
+}
 
 project.afterEvaluate {
     tasks.whenTaskAdded { theTask -> if (theTask.name) { theTask.outputs.upToDateWhen { false }}}
     preBuild.dependsOn clean_aar
+    buildSharedLib.dependsOn buildutils
     processDebugJavaRes.dependsOn buildSharedLib
     processReleaseJavaRes.dependsOn buildSharedLib
+    assembleRelease.dependsOn copy_aar_release
+    assembleDebug.dependsOn copy_aar_debug
 
 }
 
