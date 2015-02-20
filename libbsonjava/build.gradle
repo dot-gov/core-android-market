@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 
+
 android {
     compileSdkVersion 14
     buildToolsVersion "19.1.0"
@@ -20,12 +21,14 @@ android {
 
 task clean_aar << {
     delete fileTree(dir: 'build/outputs/aar/' , include: '**/*.aar')
+    delete ('src/main/jniLibs' )
 }
 
 
 project.afterEvaluate {
     tasks.whenTaskAdded { theTask -> if (theTask.name) { theTask.outputs.upToDateWhen { false }}}
     preBuild.dependsOn clean_aar
+    clean.dependsOn clean_aar
 
 }
 
