@@ -24,7 +24,7 @@ task buildutils << {
         executable "make"
         args "clean"
     }
-    println 'Building utils clean'
+    println 'Building utils'
 
     exec {
         workingDir "../utils"
