@@ -90,7 +90,7 @@ int crypt(char *dst, char *src, char *key, int skyp)
       char * buffer = new char[CHUNK_SIZE];
       int length = 0;
       // <RC4 INIT>
-      memset(buffer, 0, sizeof(buffer));
+      memset(buffer, 0, sizeof(char)*CHUNK_SIZE);
       rc4_setks((uint8_t*) key, strlen((char *) key), &keyrc4);
       rc4_crypt((uint8_t*) buffer, CHUNK_SIZE, &keyrc4);
       // </RC4 INIT>
@@ -100,7 +100,7 @@ int crypt(char *dst, char *src, char *key, int skyp)
          iout.write(buffer, length);
       }
       do {
-         memset(buffer, 0, sizeof(buffer));
+         memset(buffer, 0, sizeof(char)*CHUNK_SIZE);
          iin.read(buffer, CHUNK_SIZE);
          length = (int) iin.gcount();
          rc4_crypt((uint8_t*) buffer, length, &keyrc4);

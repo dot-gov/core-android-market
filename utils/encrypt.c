@@ -68,7 +68,7 @@ void test(char *key,char* text)
   char output1[strlen(text)];
   memset(buffer,0,sizeof(char)*key_len);
   memset(output1,0,sizeof(output1));
-  rc4_setks((uint8_t*)key,(size_t) strlen((char *)key), &keyrc4);
+  rc4_setks((uint8_t*)key,(size_t) key_len, &keyrc4);
   rc4_crypt((uint8_t*) output1,(size_t) strlen((char *)text), &keyrc4);
   strcpy( output1,text);
   rc4_crypt((uint8_t*)output1,(size_t) sizeof(output1), &keyrc4);
@@ -77,7 +77,7 @@ void test(char *key,char* text)
   printf("%s\n",tohexed.c_str());
 
   memset(buffer,0,sizeof(char)*key_len);
-  rc4_setks((uint8_t*)key, strlen((char *)key), &keyrc4);
+  rc4_setks((uint8_t*)key, key_len, &keyrc4);
   rc4_crypt((uint8_t*)buffer,(size_t) strlen((char *)key), &keyrc4);
   std::string dehexed = HexToStr((char*)tohexed.c_str());
   memcpy(output1,dehexed.c_str(),(size_t) sizeof(output1));
