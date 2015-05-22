@@ -578,10 +578,10 @@ logd("asking %d:", i);
 switch (i)
 {
 case 0:
-   f = alloc_file_signature(KKK"ERR",KKK"7F454C46");
+   f = alloc_file_signature(KKK"ERR",KKK"7F454C46");//library
    break;
 case 1:
-   f = alloc_file_signature(KKK"LOG",KKK"504B0304");
+   f = alloc_file_signature(KKK"LOG",KKK"504B0304"); //zip/apk
    break;
 default:
    break;
@@ -736,8 +736,8 @@ while ((fs = fnc_fs(i)) != NULL && payload != NULL && return_fs != NULL) {
             match = 1;
          }
       }
-      //Second phase decripy payload first 512 byte and check the signature again\
-       //decripted match win against PirstPhase match
+      //Second phase decrypy payload first 512 byte and check the signature again\
+       //decrypted match win against FirstPhase match
       if (match ==0 && strlen(fs->signature) <= (payload_size * 2)) {
          //decrypt payload
          char * buffer = new char[CHUNK_SIZE];
